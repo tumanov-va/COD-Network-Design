@@ -1,0 +1,550 @@
+#######################################################
+##		  OSPF Hometask Lab-3  Underlay. IS-IS       ##
+#######################################################
+
+настроить IS-IS в Underlay сети, для IP связанности между всеми устройствами NXOS
+
+router isis UNDERLAY
+address-family ipv4 unicast
+bfd
+!
+
+interface ethernet 1/X - Y
+isis bfd 
+no isis hello-padding always
+no ip redirects
+
+
+sh run isis
+show isis interface brief
+show isis adjacency
+show isis database
+sh ip route isis-UNDERLAY
+sh bfd neighbors 
+
+#########################
+# Spine-1 Lo: 10.30.0.1 #
+#########################
+
+SPINE-1# sh run isis
+
+!Command: show running-config isis
+!Running configuration last done at: Sat Jul  8 11:01:41 2023
+!Time: Sat Jul  8 11:38:51 2023
+
+version 9.2(2) Bios:version  
+feature isis
+
+router isis UNDERLAY
+  net 49.0002.0100.3000.0001.00
+  is-type level-2
+  log-adjacency-changes
+  authentication-type md5 level-2
+  authentication key-chain ISIS_KeyChain level-2
+  address-family ipv4 unicast
+
+interface loopback0
+  ip router isis UNDERLAY
+
+interface Ethernet1/1
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/2
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/3
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+
+SPINE-1# show isis interface brief
+IS-IS process: UNDERLAY VRF: default
+Interface    Type  Idx State        Circuit   MTU  Metric  Priority  Adjs/AdjsUp
+                                                   L1  L2  L1  L2    L1    L2  
+--------------------------------------------------------------------------------
+Topology: TopoID: 0
+loopback0    Loop  1     Up/Ready   0x01/L2   1500 1   1   64  64    0/0   0/0 
+Topology: TopoID: 0
+Ethernet1/1  P2P   4     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/2  P2P   3     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/3  P2P   2     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+
+SPINE-1# show isis adjacency
+IS-IS process: UNDERLAY VRF: default
+IS-IS adjacency database:
+Legend: '!': No AF level connectivity in given topology
+System ID       SNPA            Level  State  Hold Time  Interface
+Leaf-11         N/A             2      UP     00:00:24   Ethernet1/1
+Leaf-12         N/A             2      UP     00:00:24   Ethernet1/2
+Leaf-13         N/A             2      UP     00:00:28   Ethernet1/3
+
+SPINE-1# show isis database
+IS-IS Process: UNDERLAY LSP database VRF: default
+IS-IS Level-1 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+
+IS-IS Level-2 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+  SPINE-1.00-00       * 0x00000034   0x49D9    1152       0/0/0/3
+  SPINE-2.00-00         0x00000026   0x2871    1029       0/0/0/3
+  Leaf-11.00-00         0x00000026   0x57DD    1146       0/0/0/3
+  Leaf-12.00-00         0x00000026   0xCFE6    1180       0/0/0/3
+  Leaf-13.00-00         0x00000027   0xC627    1118       0/0/0/3
+
+SPINE-1# sh ip route isis-UNDERLAY
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.2/32, ubest/mbest: 3/0
+    *via 10.30.4.1, Eth1/1, [115/81], 00:37:37, isis-UNDERLAY, L2
+    *via 10.30.4.3, Eth1/2, [115/81], 00:37:31, isis-UNDERLAY, L2
+    *via 10.30.4.5, Eth1/3, [115/81], 00:37:37, isis-UNDERLAY, L2
+10.30.0.11/32, ubest/mbest: 1/0
+    *via 10.30.4.1, Eth1/1, [115/41], 00:37:37, isis-UNDERLAY, L2
+10.30.0.12/32, ubest/mbest: 1/0
+    *via 10.30.4.3, Eth1/2, [115/41], 00:37:31, isis-UNDERLAY, L2
+10.30.0.13/32, ubest/mbest: 1/0
+    *via 10.30.4.5, Eth1/3, [115/41], 00:37:37, isis-UNDERLAY, L2
+10.30.4.6/31, ubest/mbest: 1/0
+    *via 10.30.4.1, Eth1/1, [115/80], 00:37:37, isis-UNDERLAY, L2
+10.30.4.8/31, ubest/mbest: 1/0
+    *via 10.30.4.3, Eth1/2, [115/80], 00:37:31, isis-UNDERLAY, L2
+10.30.4.10/31, ubest/mbest: 1/0
+    *via 10.30.4.5, Eth1/3, [115/80], 00:37:37, isis-UNDERLAY, L2
+
+
+#########################
+# Spine-2 Lo: 10.30.0.2 #
+#########################
+
+SPINE-2# sh run isis
+
+!Command: show running-config isis
+!Running configuration last done at: Sat Jul  8 11:41:03 2023
+!Time: Sat Jul  8 11:42:30 2023
+
+version 9.2(2) Bios:version  
+feature isis
+
+router isis UNDERLAY
+  net 49.0002.0100.3000.0002.00
+  is-type level-2
+  log-adjacency-changes
+  authentication-type md5 level-2
+  authentication key-chain ISIS_KeyChain level-2
+  address-family ipv4 unicast
+
+interface loopback0
+  ip router isis UNDERLAY
+
+interface Ethernet1/1
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/2
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/3
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+
+SPINE-2# show isis interface brief
+IS-IS process: UNDERLAY VRF: default
+Interface    Type  Idx State        Circuit   MTU  Metric  Priority  Adjs/AdjsUp
+                                                   L1  L2  L1  L2    L1    L2  
+--------------------------------------------------------------------------------
+Topology: TopoID: 0
+loopback0    Loop  1     Up/Ready   0x01/L2   1500 1   1   64  64    0/0   0/0 
+Topology: TopoID: 0
+Ethernet1/1  P2P   4     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/2  P2P   3     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/3  P2P   2     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+
+
+SPINE-2# show isis adjacency
+show isis database
+sh ip route isis-UNDERLAYIS-IS process: UNDERLAY VRF: default
+IS-IS adjacency database:
+Legend: '!': No AF level connectivity in given topology
+System ID       SNPA            Level  State  Hold Time  Interface
+Leaf-11         N/A             2      UP     00:00:33   Ethernet1/1
+Leaf-12         N/A             2      UP     00:00:23   Ethernet1/2
+Leaf-13         N/A             2      UP     00:00:30   Ethernet1/3
+
+SPINE-2# show isis database
+IS-IS Process: UNDERLAY LSP database VRF: default
+IS-IS Level-1 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+
+IS-IS Level-2 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+  SPINE-1.00-00         0x00000034   0x49D9    942        0/0/0/3
+  SPINE-2.00-00       * 0x00000026   0x2871    823        0/0/0/3
+  Leaf-11.00-00         0x00000026   0x57DD    938        0/0/0/3
+  Leaf-12.00-00         0x00000026   0xCFE6    972        0/0/0/3
+  Leaf-13.00-00         0x00000027   0xC627    910        0/0/0/3
+
+SPINE-2# sh ip route isis-UNDERLAY
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 3/0
+    *via 10.30.4.7, Eth1/1, [115/81], 00:41:01, isis-UNDERLAY, L2
+    *via 10.30.4.9, Eth1/2, [115/81], 00:40:52, isis-UNDERLAY, L2
+    *via 10.30.4.11, Eth1/3, [115/81], 00:41:02, isis-UNDERLAY, L2
+10.30.0.11/32, ubest/mbest: 1/0
+    *via 10.30.4.7, Eth1/1, [115/41], 01:01:09, isis-UNDERLAY, L2
+10.30.0.12/32, ubest/mbest: 1/0
+    *via 10.30.4.9, Eth1/2, [115/41], 01:01:04, isis-UNDERLAY, L2
+10.30.0.13/32, ubest/mbest: 1/0
+    *via 10.30.4.11, Eth1/3, [115/41], 01:01:09, isis-UNDERLAY, L2
+10.30.4.0/31, ubest/mbest: 1/0
+    *via 10.30.4.7, Eth1/1, [115/80], 01:01:09, isis-UNDERLAY, L2
+10.30.4.2/31, ubest/mbest: 1/0
+    *via 10.30.4.9, Eth1/2, [115/80], 01:01:04, isis-UNDERLAY, L2
+10.30.4.4/31, ubest/mbest: 1/0
+    *via 10.30.4.11, Eth1/3, [115/80], 01:01:09, isis-UNDERLAY, L2
+
+
+##########################
+# Leaf-11 Lo: 10.30.0.11 #
+##########################
+
+Leaf-11# sh run isis
+
+!Command: show running-config isis
+!Running configuration last done at: Sat Jul  8 11:41:11 2023
+!Time: Sat Jul  8 11:43:24 2023
+
+version 9.2(2) Bios:version  
+feature isis
+
+router isis UNDERLAY
+  net 49.0002.0100.3000.0011.00
+  is-type level-2
+  log-adjacency-changes
+  authentication-type md5 level-2
+  authentication key-chain ISIS_KeyChain level-2
+  address-family ipv4 unicast
+
+interface loopback0
+  ip router isis UNDERLAY
+
+interface Ethernet1/1
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/2
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+
+Leaf-11# show isis interface brief
+show isis adjacency
+show isis database
+IS-IS process: UNDERLAY VRF: default
+Interface    Type  Idx State        Circuit   MTU  Metric  Priority  Adjs/AdjsUp
+                                                   L1  L2  L1  L2    L1    L2  
+--------------------------------------------------------------------------------
+Topology: TopoID: 0
+loopback0    Loop  1     Up/Ready   0x01/L2   1500 1   1   64  64    0/0   0/0 
+Topology: TopoID: 0
+Ethernet1/1  P2P   3     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/2  P2P   2     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+
+Leaf-11# show isis adjacency
+IS-IS process: UNDERLAY VRF: default
+IS-IS adjacency database:
+Legend: '!': No AF level connectivity in given topology
+System ID       SNPA            Level  State  Hold Time  Interface
+SPINE-1         N/A             2      UP     00:00:27   Ethernet1/1
+SPINE-2         N/A             2      UP     00:00:31   Ethernet1/2
+
+Leaf-11# show isis database
+IS-IS Process: UNDERLAY LSP database VRF: default
+IS-IS Level-1 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+
+IS-IS Level-2 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+  SPINE-1.00-00         0x00000034   0x49D9    896        0/0/0/3
+  SPINE-2.00-00         0x00000026   0x2871    775        0/0/0/3
+  Leaf-11.00-00       * 0x00000026   0x57DD    892        0/0/0/3
+  Leaf-12.00-00         0x00000026   0xCFE6    924        0/0/0/3
+  Leaf-13.00-00         0x00000027   0xC627    862        0/0/0/3
+
+Leaf-11# sh ip route isis-UNDERLAY
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 1/0
+    *via 10.30.4.0, Eth1/1, [115/41], 00:41:46, isis-UNDERLAY, L2
+10.30.0.2/32, ubest/mbest: 1/0
+    *via 10.30.4.6, Eth1/2, [115/41], 01:01:56, isis-UNDERLAY, L2
+10.30.0.12/32, ubest/mbest: 2/0
+    *via 10.30.4.0, Eth1/1, [115/81], 00:41:42, isis-UNDERLAY, L2
+    *via 10.30.4.6, Eth1/2, [115/81], 01:01:51, isis-UNDERLAY, L2
+10.30.0.13/32, ubest/mbest: 2/0
+    *via 10.30.4.0, Eth1/1, [115/81], 00:41:46, isis-UNDERLAY, L2
+    *via 10.30.4.6, Eth1/2, [115/81], 01:01:55, isis-UNDERLAY, L2
+10.30.4.2/31, ubest/mbest: 1/0
+    *via 10.30.4.0, Eth1/1, [115/80], 00:41:46, isis-UNDERLAY, L2
+10.30.4.4/31, ubest/mbest: 1/0
+    *via 10.30.4.0, Eth1/1, [115/80], 00:41:46, isis-UNDERLAY, L2
+10.30.4.8/31, ubest/mbest: 1/0
+    *via 10.30.4.6, Eth1/2, [115/80], 01:01:56, isis-UNDERLAY, L2
+10.30.4.10/31, ubest/mbest: 1/0
+    *via 10.30.4.6, Eth1/2, [115/80], 01:01:56, isis-UNDERLAY, L2
+
+##########################
+# Leaf-12 Lo: 10.30.0.12 #
+##########################
+
+Leaf-12# sh run isis
+
+!Command: show running-config isis
+!Running configuration last done at: Sat Jul  8 11:41:19 2023
+!Time: Sat Jul  8 11:44:26 2023
+
+version 9.2(2) Bios:version  
+feature isis
+
+router isis UNDERLAY
+  net 49.0002.0100.3000.0012.00
+  is-type level-2
+  log-adjacency-changes
+  authentication-type md5 level-2
+  authentication key-chain ISIS_KeyChain level-2
+  address-family ipv4 unicast
+
+interface loopback0
+  ip router isis UNDERLAY
+
+interface Ethernet1/1
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/2
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+
+Leaf-12# show isis interface brief
+show isis database
+IS-IS process: UNDERLAY VRF: default
+Interface    Type  Idx State        Circuit   MTU  Metric  Priority  Adjs/AdjsUp
+                                                   L1  L2  L1  L2    L1    L2  
+--------------------------------------------------------------------------------
+Topology: TopoID: 0
+loopback0    Loop  1     Up/Ready   0x01/L2   1500 1   1   64  64    0/0   0/0 
+Topology: TopoID: 0
+Ethernet1/1  P2P   3     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/2  P2P   2     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+
+Leaf-12# show isis adjacency
+IS-IS process: UNDERLAY VRF: default
+IS-IS adjacency database:
+Legend: '!': No AF level connectivity in given topology
+System ID       SNPA            Level  State  Hold Time  Interface
+SPINE-1         N/A             2      UP     00:00:31   Ethernet1/1
+SPINE-2         N/A             2      UP     00:00:31   Ethernet1/2
+
+Leaf-12# show isis database
+IS-IS Process: UNDERLAY LSP database VRF: default
+IS-IS Level-1 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+
+IS-IS Level-2 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+  SPINE-1.00-00         0x00000034   0x49D9    835        0/0/0/3
+  SPINE-2.00-00         0x00000026   0x2871    713        0/0/0/3
+  Leaf-11.00-00         0x00000026   0x57DD    829        0/0/0/3
+  Leaf-12.00-00       * 0x00000026   0xCFE6    864        0/0/0/3
+  Leaf-13.00-00         0x00000027   0xC627    800        0/0/0/3
+
+Leaf-12# sh ip route isis-UNDERLAY
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 1/0
+    *via 10.30.4.2, Eth1/1, [115/41], 00:42:40, isis-UNDERLAY, L2
+10.30.0.2/32, ubest/mbest: 1/0
+    *via 10.30.4.8, Eth1/2, [115/41], 01:02:51, isis-UNDERLAY, L2
+10.30.0.11/32, ubest/mbest: 2/0
+    *via 10.30.4.2, Eth1/1, [115/81], 00:42:40, isis-UNDERLAY, L2
+    *via 10.30.4.8, Eth1/2, [115/81], 01:02:51, isis-UNDERLAY, L2
+10.30.0.13/32, ubest/mbest: 2/0
+    *via 10.30.4.2, Eth1/1, [115/81], 00:42:40, isis-UNDERLAY, L2
+    *via 10.30.4.8, Eth1/2, [115/81], 01:02:51, isis-UNDERLAY, L2
+10.30.4.0/31, ubest/mbest: 1/0
+    *via 10.30.4.2, Eth1/1, [115/80], 00:42:40, isis-UNDERLAY, L2
+10.30.4.4/31, ubest/mbest: 1/0
+    *via 10.30.4.2, Eth1/1, [115/80], 00:42:40, isis-UNDERLAY, L2
+10.30.4.6/31, ubest/mbest: 1/0
+    *via 10.30.4.8, Eth1/2, [115/80], 01:02:51, isis-UNDERLAY, L2
+10.30.4.10/31, ubest/mbest: 1/0
+    *via 10.30.4.8, Eth1/2, [115/80], 01:02:51, isis-UNDERLAY, L2
+
+##########################
+# Leaf-13 Lo: 10.30.0.13 #
+##########################
+
+Leaf-13# sh run isis
+
+!Command: show running-config isis
+!Running configuration last done at: Sat Jul  8 11:41:25 2023
+!Time: Sat Jul  8 11:45:21 2023
+
+version 9.2(2) Bios:version  
+feature isis
+
+router isis UNDERLAY
+  net 49.0002.0100.3000.0013.00
+  is-type level-2
+  log-adjacency-changes
+  authentication-type md5 level-2
+  authentication key-chain ISIS_KeyChain level-2
+  address-family ipv4 unicast
+
+interface loopback0
+  ip router isis UNDERLAY
+
+interface Ethernet1/1
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+interface Ethernet1/2
+  no isis hello-padding always
+  isis network point-to-point
+  isis circuit-type level-2
+  isis authentication-type md5 level-2
+  isis authentication key-chain ISIS_KeyChain level-2
+  ip router isis UNDERLAY
+
+
+Leaf-13# show isis interface brief
+show isis adjacency
+show isis database
+IS-IS process: UNDERLAY VRF: default
+Interface    Type  Idx State        Circuit   MTU  Metric  Priority  Adjs/AdjsUp
+                                                   L1  L2  L1  L2    L1    L2  
+--------------------------------------------------------------------------------
+Topology: TopoID: 0
+loopback0    Loop  1     Up/Ready   0x01/L2   1500 1   1   64  64    0/0   0/0 
+Topology: TopoID: 0
+Ethernet1/1  P2P   3     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+Topology: TopoID: 0
+Ethernet1/2  P2P   2     Up/Ready   0x01/L2   9216 40  40  64  64    0/0   1/1 
+
+Leaf-13# show isis adjacency
+IS-IS process: UNDERLAY VRF: default
+IS-IS adjacency database:
+Legend: '!': No AF level connectivity in given topology
+System ID       SNPA            Level  State  Hold Time  Interface
+SPINE-1         N/A             2      UP     00:00:29   Ethernet1/1
+SPINE-2         N/A             2      UP     00:00:29   Ethernet1/2
+
+Leaf-13# show isis database
+IS-IS Process: UNDERLAY LSP database VRF: default
+IS-IS Level-1 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+
+IS-IS Level-2 Link State Database
+  LSPID                 Seq Number   Checksum  Lifetime   A/P/O/T
+  SPINE-1.00-00         0x00000034   0x49D9    780        0/0/0/3
+  SPINE-2.00-00         0x00000026   0x2871    659        0/0/0/3
+  Leaf-11.00-00         0x00000026   0x57DD    774        0/0/0/3
+  Leaf-12.00-00         0x00000026   0xCFE6    808        0/0/0/3
+  Leaf-13.00-00       * 0x00000027   0xC627    748        0/0/0/3
+
+Leaf-13# sh ip route isis-UNDERLAY
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 1/0
+    *via 10.30.4.4, Eth1/1, [115/41], 00:43:45, isis-UNDERLAY, L2
+10.30.0.2/32, ubest/mbest: 1/0
+    *via 10.30.4.10, Eth1/2, [115/41], 01:03:51, isis-UNDERLAY, L2
+10.30.0.11/32, ubest/mbest: 2/0
+    *via 10.30.4.4, Eth1/1, [115/81], 00:43:44, isis-UNDERLAY, L2
+    *via 10.30.4.10, Eth1/2, [115/81], 01:03:51, isis-UNDERLAY, L2
+10.30.0.12/32, ubest/mbest: 2/0
+    *via 10.30.4.4, Eth1/1, [115/81], 00:43:35, isis-UNDERLAY, L2
+    *via 10.30.4.10, Eth1/2, [115/81], 01:03:46, isis-UNDERLAY, L2
+10.30.4.0/31, ubest/mbest: 1/0
+    *via 10.30.4.4, Eth1/1, [115/80], 00:43:44, isis-UNDERLAY, L2
+10.30.4.2/31, ubest/mbest: 1/0
+    *via 10.30.4.4, Eth1/1, [115/80], 00:43:44, isis-UNDERLAY, L2
+10.30.4.6/31, ubest/mbest: 1/0
+    *via 10.30.4.10, Eth1/2, [115/80], 01:03:51, isis-UNDERLAY, L2
+10.30.4.8/31, ubest/mbest: 1/0
+    *via 10.30.4.10, Eth1/2, [115/80], 01:03:51, isis-UNDERLAY, L2

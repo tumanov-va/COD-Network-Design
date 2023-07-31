@@ -1,0 +1,1640 @@
+
+##########################################################################################################
+#                                                   SPINE-1                                              #
+##########################################################################################################
+
+
+!Command: show running-config
+!Running configuration last done at: Sun Jul 30 20:32:22 2023
+!Time: Sun Jul 30 20:32:23 2023
+
+version 10.3(1) Bios:version  
+hostname Spine-1
+vdc Spine-1 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature fabric forwarding
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$HMLNHI$LoOdUHSmVce0wvWNx8lsY1UaZmneKEuNEyPrueKU5F6  role network-admin
+ip domain-lookup
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+copp profile strict
+snmp-server user admin network-admin auth md5 166FBB3DAF36D8D725584EACBFABF238CAB4 priv aes-128 174CB140FB62FB8375503FE5EEFFA9369594 localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+
+no cdp enable
+ip as-path access-list AS-PATH-LIST seq 10 permit "65031:65999"
+route-map AS_FILTER permit 10
+  match as-path AS-PATH-LIST 
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 loopback1 
+route-map next-hop-unchanged permit 10
+  set ip next-hop unchanged
+key chain UNDERLAY_KeyChain
+  key 1
+    key-string 7 073f007f7d3e363733
+    cryptographic-algorithm HMAC-SHA-256
+vrf context management
+
+
+interface Ethernet1/1
+  description # Leaf-11 # 10.30.0.11 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.0/31
+  ipv6 address use-link-local-only
+  no shutdown
+
+interface Ethernet1/2
+  description # Leaf-12 # 10.30.0.12 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.2/31
+  ipv6 address use-link-local-only
+  no shutdown
+
+interface Ethernet1/3
+  description # Leaf-13 # 10.30.0.13 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.4/31
+  ipv6 address use-link-local-only
+  no shutdown
+
+interface Ethernet1/4
+  no switchport
+  ipv6 address use-link-local-only
+
+interface Ethernet1/5
+  no switchport
+  ipv6 address use-link-local-only
+
+interface Ethernet1/6
+  no switchport
+  ipv6 address use-link-local-only
+
+interface Ethernet1/7
+  no switchport
+  ipv6 address use-link-local-only
+
+interface Ethernet1/8
+  no switchport
+
+interface Ethernet1/9
+  no switchport
+
+interface Ethernet1/10
+  no switchport
+
+interface Ethernet1/11
+  no switchport
+
+interface Ethernet1/12
+  no switchport
+
+interface Ethernet1/13
+  no switchport
+
+interface Ethernet1/14
+  no switchport
+
+interface Ethernet1/15
+  no switchport
+
+interface Ethernet1/16
+  no switchport
+
+interface Ethernet1/17
+  no switchport
+
+interface Ethernet1/18
+  no switchport
+
+interface Ethernet1/19
+  no switchport
+
+interface Ethernet1/20
+  no switchport
+
+interface Ethernet1/21
+  no switchport
+
+interface Ethernet1/22
+  no switchport
+
+interface Ethernet1/23
+  no switchport
+
+interface Ethernet1/24
+  no switchport
+
+interface Ethernet1/25
+  no switchport
+
+interface Ethernet1/26
+  no switchport
+
+interface Ethernet1/27
+  no switchport
+
+interface Ethernet1/28
+  no switchport
+
+interface Ethernet1/29
+  no switchport
+
+interface Ethernet1/30
+  no switchport
+
+interface Ethernet1/31
+  no switchport
+
+interface Ethernet1/32
+  no switchport
+
+interface Ethernet1/33
+  no switchport
+
+interface Ethernet1/34
+  no switchport
+
+interface Ethernet1/35
+  no switchport
+
+interface Ethernet1/36
+  no switchport
+
+interface Ethernet1/37
+  no switchport
+
+interface Ethernet1/38
+  no switchport
+
+interface Ethernet1/39
+  no switchport
+
+interface Ethernet1/40
+  no switchport
+
+interface Ethernet1/41
+  no switchport
+
+interface Ethernet1/42
+  no switchport
+
+interface Ethernet1/43
+  no switchport
+
+interface Ethernet1/44
+  no switchport
+
+interface Ethernet1/45
+  no switchport
+
+interface Ethernet1/46
+  no switchport
+
+interface Ethernet1/47
+  no switchport
+
+interface Ethernet1/48
+  no switchport
+
+interface Ethernet1/49
+  no switchport
+
+interface Ethernet1/50
+  no switchport
+
+interface Ethernet1/51
+  no switchport
+
+interface Ethernet1/52
+  no switchport
+
+interface Ethernet1/53
+  no switchport
+
+interface Ethernet1/54
+  no switchport
+
+interface Ethernet1/55
+  no switchport
+
+interface Ethernet1/56
+  no switchport
+
+interface Ethernet1/57
+  no switchport
+
+interface Ethernet1/58
+  no switchport
+
+interface Ethernet1/59
+  no switchport
+
+interface Ethernet1/60
+  no switchport
+
+interface Ethernet1/61
+  no switchport
+
+interface Ethernet1/62
+  no switchport
+
+interface Ethernet1/63
+  no switchport
+
+interface Ethernet1/64
+  no switchport
+
+interface mgmt0
+  vrf member management
+  ipv6 address use-link-local-only
+
+interface loopback0
+  description Router_ID # ControlPlane_EVPN
+  ip address 10.30.0.1/32
+
+interface loopback1
+  description Router_ID # DataPlane_VxLAN
+  ip address 10.30.1.1/32
+icam monitor scale
+
+line console
+  exec-timeout 60
+line vty
+boot nxos bootflash:/nxos64-cs.10.3.1.F.bin 
+router bgp 65030
+  router-id 10.30.0.1
+  bestpath as-path multipath-relax
+  maxas-limit 3
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+    retain route-target all
+  neighbor 10.30.1.0/24 remote-as route-map AS_FILTER
+    bfd
+    description LEAF_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-map next-hop-unchanged out
+  neighbor 10.30.4.0/24 remote-as route-map AS_FILTER
+    bfd
+    description LEAF
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+
+
+!
+
+
+!end
+!end
+
+
+
+##########################################################################################################
+#                                                   SPINE-2                                              #
+##########################################################################################################
+
+
+
+!Command: show running-config
+!Running configuration last done at: Sun Jul 30 20:34:33 2023
+!Time: Sun Jul 30 20:34:34 2023
+
+version 10.3(1) Bios:version  
+hostname Spine-2
+vdc Spine-2 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature fabric forwarding
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$JLCIBK$ZY99Ta10.CW0rYGooRVNulW7P/gGgcI.hk9n8r80EX3  role network-admin
+ip domain-lookup
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+copp profile strict
+snmp-server user admin network-admin auth md5 043AE939D1171E2E7E10FFAFE8A965E7C0F2 priv aes-128 5207AE2CDB3155696D2193E1B6B47AD0A38E localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+
+no cdp enable
+ip as-path access-list AS-PATH-LIST seq 10 permit "65031:65999"
+route-map AS_FILTER permit 10
+  match as-path AS-PATH-LIST 
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 loopback1 
+route-map next-hop-unchanged permit 10
+  set ip next-hop unchanged
+key chain UNDERLAY_KeyChain
+  key 1
+    key-string 7 073f007f7d3e363733
+    cryptographic-algorithm HMAC-SHA-256
+vrf context management
+
+
+interface Ethernet1/1
+  description # Leaf-11 # 10.30.0.11 # Port # Ethernet1/2
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.6/31
+  no shutdown
+
+interface Ethernet1/2
+  description # Leaf-12 # 10.30.0.12 # Port # Ethernet1/2
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.8/31
+  no shutdown
+
+interface Ethernet1/3
+  description # Leaf-13 # 10.30.0.13 # Port # Ethernet1/2
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.10/31
+  no shutdown
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  description Router_ID # ControlPlane_EVPN
+  ip address 10.30.0.2/32
+
+interface loopback1
+  description Router_ID # DataPlane_VxLAN
+  ip address 10.30.1.2/32
+icam monitor scale
+
+line console
+  exec-timeout 60
+line vty
+boot nxos bootflash:/nxos64-cs.10.3.1.F.bin 
+router bgp 65030
+  router-id 10.30.0.2
+  bestpath as-path multipath-relax
+  maxas-limit 3
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+    retain route-target all
+  neighbor 10.30.1.0/24 remote-as route-map AS_FILTER
+    bfd
+    description LEAF_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-map next-hop-unchanged out
+  neighbor 10.30.4.0/24 remote-as route-map AS_FILTER
+    bfd
+    description LEAF
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+
+
+!
+
+
+!end
+!end
+
+##########################################################################################################
+#                                                   LEAF-11                                              #
+##########################################################################################################
+
+
+
+!Command: show running-config
+!Running configuration last done at: Sun Jul 30 20:34:11 2023
+!Time: Sun Jul 30 20:34:12 2023
+
+version 10.3(1) Bios:version  
+hostname Leaf-11
+vdc Leaf-11 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature fabric forwarding
+feature interface-vlan
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$EJFMPB$CJetE6UPp.KEdLdiIlYkACmC7wwpma/iJ8HagUcvv5D  role network-admin
+ip domain-lookup
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+copp profile strict
+hardware access-list tcam region racl 512
+hardware access-list tcam region arp-ether 256 double-wide
+snmp-server user admin network-admin auth md5 4952F558EDE8B5AB3BE8A95257CA017F3756 priv aes-128 4946FB04ADBABFF328F8FF2B4CD75A33664A localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 0001.0001.9999
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+no cdp enable
+ip prefix-list PL_CONNECTED_OUT seq 10 permit 10.30.10.0/24 
+ip prefix-list PL_CONNECTED_OUT seq 20 permit 10.30.30.0/24 
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 loopback1 
+route-map RM_EXPORT_CONNECTED permit 10
+  match ip address prefix-list PL_CONNECTED_OUT 
+key chain UNDERLAY_KeyChain
+  key 1
+    key-string 7 073f007f7d3e363733
+    cryptographic-algorithm HMAC-SHA-256
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.11:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65031:13000 evpn
+vrf context management
+
+
+interface Vlan1
+
+interface Vlan10
+  description SVI_PROM_Clients-GW
+  no shutdown
+  vrf member L3VNI_Transit
+  ip address 10.30.10.254/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan13
+  description L3VNI_Transit_SVI # W/O IP ADDRESS #
+  no shutdown
+  vrf member L3VNI_Transit
+  no ip redirects
+  ip forward
+
+interface Vlan30
+  description SVI_PSI_Clients-GW
+  no shutdown
+  vrf member L3VNI_Transit
+  ip address 10.30.30.254/24
+  fabric forwarding mode anycast-gateway
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+interface Ethernet1/1
+  description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.1/31
+  no shutdown
+
+interface Ethernet1/2
+  description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.7/31
+  no shutdown
+
+interface Ethernet1/3
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+  description # PSI # Client-1
+  switchport access vlan 30
+
+interface Ethernet1/6
+  description # TEST # Client-1
+  switchport access vlan 20
+
+interface Ethernet1/7
+  description # PROM # Client-1
+  switchport access vlan 10
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  description Router_ID # ControlPlane_EVPN
+  ip address 10.30.0.11/32
+
+interface loopback1
+  description Router_ID # DataPlane_VxLAN
+  ip address 10.30.1.11/32
+icam monitor scale
+
+line console
+line vty
+boot nxos bootflash:/nxos64-cs.10.3.1.F.bin 
+router bgp 65031
+  router-id 10.30.0.11
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description SPINE_UNDERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.0
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.6
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.11:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.11:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.11:30
+    route-target import 30000:30
+    route-target export 30000:30
+
+
+!
+
+
+!end
+!end
+
+##########################################################################################################
+#                                                   LEAF-12                                              #
+##########################################################################################################
+
+
+
+!Command: show running-config
+!Running configuration last done at: Sun Jul 30 20:34:00 2023
+!Time: Sun Jul 30 20:34:01 2023
+
+version 10.3(1) Bios:version  
+hostname Leaf-12
+vdc Leaf-12 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature fabric forwarding
+feature interface-vlan
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$CDELIK$Q3qLst9NDSBYHSrzjllfbIoO.gqieM8Y7WQ5gCIMDZ0  role network-admin
+ip domain-lookup
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+copp profile strict
+hardware access-list tcam region racl 512
+hardware access-list tcam region arp-ether 256 double-wide
+snmp-server user admin network-admin auth md5 21652A9B06DBD591CA17142D78AA878D6EB9 priv aes-128 376346FE38ABC9D69E17386B67AF9FD02BF7 localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 0001.0001.9999
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+no cdp enable
+ip prefix-list PL_CONNECTED_OUT seq 10 permit 10.30.10.0/24 
+ip prefix-list PL_CONNECTED_OUT seq 20 permit 10.30.30.0/24 
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 loopback1 
+route-map RM_EXPORT_CONNECTED permit 10
+  match ip address prefix-list PL_CONNECTED_OUT 
+key chain UNDERLAY_KeyChain
+  key 1
+    key-string 7 073f007f7d3e363733
+    cryptographic-algorithm HMAC-SHA-256
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.12:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65032:13000 evpn
+vrf context management
+
+
+interface Vlan1
+
+interface Vlan10
+  description SVI_PROM_Clients-GW
+  no shutdown
+  vrf member L3VNI_Transit
+  ip address 10.30.10.254/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan13
+  description L3VNI_Transit_SVI # W/O IP ADDRESS #
+  no shutdown
+  vrf member L3VNI_Transit
+  no ip redirects
+  ip forward
+
+interface Vlan30
+  description SVI_PSI_Clients-GW
+  no shutdown
+  vrf member L3VNI_Transit
+  ip address 10.30.30.254/24
+  fabric forwarding mode anycast-gateway
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+interface Ethernet1/1
+  description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.3/31
+  no shutdown
+
+interface Ethernet1/2
+  description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.9/31
+  no shutdown
+
+interface Ethernet1/3
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+  description # PSI # Client-2
+  switchport access vlan 30
+
+interface Ethernet1/6
+  description # TEST # Client-2
+  switchport access vlan 20
+
+interface Ethernet1/7
+  description # PROM # Client-2
+  switchport access vlan 10
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  description Router_ID # ControlPlane_EVPN
+  ip address 10.30.0.12/32
+
+interface loopback1
+  description Router_ID # DataPlane_VxLAN
+  ip address 10.30.1.12/32
+icam monitor scale
+
+line console
+  exec-timeout 60
+line vty
+boot nxos bootflash:/nxos64-cs.10.3.1.F.bin 
+router bgp 65032
+  router-id 10.30.0.12
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description LEAF
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.2
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.8
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.12:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.12:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.12:30
+    route-target import 30000:30
+    route-target export 30000:30
+
+
+!
+
+
+!end
+!end
+
+
+##########################################################################################################
+#                                                   LEAF-13                                              #
+##########################################################################################################
+
+
+
+!Command: show running-config
+!Running configuration last done at: Sun Jul 30 20:34:37 2023
+!Time: Sun Jul 30 20:34:37 2023
+
+version 10.3(1) Bios:version  
+hostname Leaf-13
+vdc Leaf-13 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature fabric forwarding
+feature interface-vlan
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$KNILJD$t4JpYOtiPmVbCD4p51s6MgJp9KG7amdzynCe6zOD4lB  role network-admin
+ip domain-lookup
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+copp profile strict
+hardware access-list tcam region racl 512
+hardware access-list tcam region arp-ether 256 double-wide
+snmp-server user admin network-admin auth md5 365A2DC196902116C8AB802F3F05BCE4FAE9 priv aes-128 042E56F3AFDB13479EF0DC4C3C42E7ADD98C localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 0001.0001.9999
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+no cdp enable
+ip prefix-list PL_CONNECTED_OUT seq 10 permit 10.30.10.0/24 
+ip prefix-list PL_CONNECTED_OUT seq 20 permit 10.30.30.0/24 
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 loopback1 
+route-map RM_EXPORT_CONNECTED permit 10
+  match ip address prefix-list PL_CONNECTED_OUT 
+key chain UNDERLAY_KeyChain
+  key 1
+    key-string 7 073f007f7d3e363733
+    cryptographic-algorithm HMAC-SHA-256
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.13:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65033:13000 evpn
+vrf context management
+
+
+interface Vlan1
+
+interface Vlan10
+  description SVI_PROM_Clients-GW
+  no shutdown
+  vrf member L3VNI_Transit
+  ip address 10.30.10.254/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan13
+  description L3VNI_Transit_SVI # W/O IP ADDRESS #
+  no shutdown
+  vrf member L3VNI_Transit
+  no ip redirects
+  ip forward
+
+interface Vlan30
+  description SVI_PSI_Clients-GW
+  no shutdown
+  vrf member L3VNI_Transit
+  ip address 10.30.30.254/24
+  fabric forwarding mode anycast-gateway
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+interface Ethernet1/1
+  description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.5/31
+  no shutdown
+
+interface Ethernet1/2
+  description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.11/31
+  no shutdown
+
+interface Ethernet1/3
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+  description # PSI # Client-3
+  switchport access vlan 30
+
+interface Ethernet1/6
+  description # TEST # Client-3
+  switchport access vlan 20
+
+interface Ethernet1/7
+  description # PROM # Client-3
+  switchport access vlan 10
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  description Router_ID # ControlPlane_EVPN
+  ip address 10.30.0.13/32
+
+interface loopback1
+  description Router_ID # DataPlane_VxLAN
+  ip address 10.30.1.13/32
+icam monitor scale
+
+line console
+line vty
+boot nxos bootflash:/nxos64-cs.10.3.1.F.bin 
+router bgp 65033
+  router-id 10.30.0.13
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description LEAF
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.4
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.10
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.13:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.13:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.13:30
+    route-target import 30000:30
+    route-target export 30000:30
+
+
+!
+
+
+!end
+!end
+
+###################################################################################
+
+set pcname PROM_CLNT-1
+ip 10.30.10.1 10.30.10.254 24
+
+set pcname PROM_CLNT-2
+ip 10.30.10.2 10.30.10.254 24
+
+set pcname TEST_CLNT-3
+ip 10.30.20.3 10.30.20.254 24
+
+#####
+
+set pcname PROM_CLNT-3
+ip 10.30.10.3 255.255.255.0 24
+
+set pcname TEST_CLNT-1
+ip 10.30.20.1 10.30.20.254 24
+
+set pcname TEST_CLNT-2
+ip 10.30.20.2 10.30.20.254 24
+
+#####
+
+set pcname PSI_CLNT-3
+ip 10.30.30.3 10.30.30.254 24
+
+set pcname PSI_CLNT-1
+ip 10.30.30.1 10.30.30.254 24
+
+set pcname PSI_CLNT-2
+ip 10.30.30.2 10.30.30.254 24
+
+#####################################################################################
+

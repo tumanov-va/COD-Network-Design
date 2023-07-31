@@ -1,0 +1,324 @@
+#############################################################
+#                          SPINE-1 
+#############################################################
+
+hostname SPINE-1
+!
+boot nxos bootflash:/nxos.9.2.2.bin
+!
+interface Loopback0
+ip address 10.30.0.1/32
+isis circuit-type level-2
+!  
+router isis UNDERLAY
+net 49.0002.0100.3000.0001.00
+!
+interface Ethernet1/1
+description # Leaf-11 # 10.30.0.11 # Port # Ethernet1/1
+no switchport
+ip address 10.30.4.0/31
+no shutdown
+!
+interface Ethernet1/2
+description # Leaf-12 # 10.30.0.12 # Port # Ethernet1/1
+no switchport
+ip address 10.30.4.2/31
+no shutdown
+!
+interface Ethernet1/3
+description # Leaf-13 # 10.30.0.13 # Port # Ethernet1/1
+no switchport
+ip address 10.30.4.4/31
+no shutdown
+!  
+  
+#############################################################
+#                          SPINE-2
+#############################################################
+
+hostname SPINE-2
+!
+boot nxos bootflash:/nxos.9.2.2.bin
+!
+interface Loopback0
+ip address 10.30.0.2 255.255.255.255
+isis circuit-type level-2
+!  
+router isis UNDERLAY
+net 49.0002.0100.3000.0002.00
+!
+int ethernet 1/1
+description # Leaf-11 # 10.30.0.11 # Port # Ethernet1/2
+no switchport
+ip address 10.30.4.6 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Leaf-12 # 10.30.0.12 # Port # Ethernet1/2
+no switchport
+ip address 10.30.4.8 255.255.255.254
+no shutdown
+!
+int ethernet 1/3
+description # Leaf-13 # 10.30.0.13 # Port # Ethernet1/2
+no switchport
+ip address 10.30.4.10 255.255.255.254
+no shutdown
+!
+
+#############################################################
+#                          LEAF-11
+#############################################################
+hostname Leaf-11
+!
+boot nxos bootflash:/nxos.9.2.2.bin
+interface Loopback0
+ip address 10.30.0.11 255.255.255.255
+isis circuit-type level-2
+!  
+router isis UNDERLAY
+net 49.0002.0100.3000.0011.00
+!
+int ethernet 1/1
+description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+no switchport
+ip address 10.30.4.1 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+no switchport
+ip address 10.30.4.7 255.255.255.254
+no shutdown
+!
+int ethernet 1/7
+description # Client-1 #
+shutdown
+! 
+
+#############################################################
+#                          LEAF-12
+#############################################################
+hostname Leaf-12
+!
+boot nxos bootflash:/nxos.9.2.2.bin
+!
+interface Loopback0
+ip address 10.30.0.12 255.255.255.255
+isis circuit-type level-2
+!  
+router isis UNDERLAY
+net 49.0002.0100.3000.0012.00
+!
+int ethernet 1/1
+description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+no switchport
+ip address 10.30.4.3 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+no switchport
+ip address 10.30.4.9 255.255.255.254
+no shutdown
+!
+int ethernet 1/7
+description # Client-1 #
+shutdown
+! 
+
+#############################################################
+#                          LEAF-13
+#############################################################
+hostname Leaf-13
+!
+boot nxos bootflash:/nxos.9.2.2.bin
+!
+interface Loopback0
+ip address 10.30.0.13 255.255.255.255
+isis circuit-type level-2
+!  
+router isis UNDERLAY
+net 49.0002.0100.3000.0013.00
+!
+int ethernet 1/1
+description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+no switchport
+ip address 10.30.4.5 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+no switchport
+ip address 10.30.4.11 255.255.255.254
+no shutdown
+!
+int ethernet 1/7
+description # Client-3 #
+shutdown
+! 
+int ethernet 1/6
+description # Client-4 #
+shutdown
+! 
+
+
+
+
+###########################
+			SPINE
+###########################
+
+#int eth1/1
+#isis authentication-type md5 level-2
+
+feature bfd
+!
+interface loopback0
+description Router_ID
+!
+key chain ISIS_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+interface Ethernet1/1
+no isis hello-padding always
+no switchport
+mtu 9216
+no ip redirects
+isis network point-to-point
+isis circuit-type level-2
+isis authentication key-chain ISIS_KeyChain level-2
+isis authentication-type md5 level-2
+ip router isis UNDERLAY
+isis bfd
+no shutdown
+!
+interface Ethernet1/2
+no isis hello-padding always
+no switchport
+mtu 9216
+no ip redirects
+isis network point-to-point
+isis circuit-type level-2
+isis authentication key-chain ISIS_KeyChain level-2
+isis authentication-type md5 level-2
+ip router isis UNDERLAY
+isis bfd
+no shutdown
+!
+interface Ethernet1/3
+no isis hello-padding always
+no switchport
+mtu 9216
+no ip redirects
+isis network point-to-point
+isis circuit-type level-2
+isis authentication key-chain ISIS_KeyChain level-2
+isis authentication-type md5 level-2
+ip router isis UNDERLAY
+isis bfd
+no shutdown
+!
+router isis UNDERLAY
+is-type level-2
+log-adjacency-changes
+authentication key-chain ISIS_KeyChain level-2
+address-family ipv4 unicast
+bfd
+!
+
+
+
+#######################
+
+###########################
+			LEAF
+###########################
+feature bfd
+!
+interface loopback0
+description Router_ID
+!
+key chain ISIS_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+interface Ethernet1/1
+no isis hello-padding always
+no switchport
+mtu 9216
+no ip redirects
+isis network point-to-point
+isis circuit-type level-2
+isis authentication key-chain ISIS_KeyChain level-2
+isis authentication-type md5 level-2
+ip router isis UNDERLAY
+isis bfd
+no shutdown
+!
+interface Ethernet1/2
+no isis hello-padding always
+no switchport
+mtu 9216
+no ip redirects
+isis network point-to-point
+isis circuit-type level-2
+isis authentication key-chain ISIS_KeyChain level-2
+isis authentication-type md5 level-2
+ip router isis UNDERLAY
+isis bfd
+no shutdown
+!
+router isis UNDERLAY
+is-type level-2
+log-adjacency-changes
+authentication key-chain ISIS_KeyChain level-2
+address-family ipv4 unicast
+bfd
+!
+
+
+!
+interface Ethernet1/1
+no isis bfd
+!
+interface Ethernet1/2
+no isis bfd
+!
+interface Ethernet1/3
+no isis bfd
+!
+router isis UNDERLAY
+address-family ipv4 unicast
+no bfd
+!
+!
+
+
+!
+interface Ethernet1/1
+no isis bfd
+!
+interface Ethernet1/2
+no isis bfd
+!
+router isis UNDERLAY
+address-family ipv4 unicast
+no bfd
+!
+!

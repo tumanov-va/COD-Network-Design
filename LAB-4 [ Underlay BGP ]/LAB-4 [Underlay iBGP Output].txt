@@ -1,0 +1,408 @@
+
+
+########################################################################
+##		  OSPF Hometask Lab-4  Underlay. iBGP   [ Internal BGP ]      ##
+########################################################################
+
+show run bgp
+show ip bgp summary
+show ip bgp
+show ip route bgp
+
+
+#########################
+# Spine-1 Lo: 10.30.0.1 #
+#########################
+
+Spine-1# sh run bgp 
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul  8 12:17:50 2023
+!Time: Sat Jul  8 12:25:17 2023
+
+version 9.3(8) Bios:version  
+feature bgp
+
+router bgp 54030
+  router-id 10.30.0.1
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  neighbor 10.30.4.0/24
+    remote-as 54030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 9
+    maximum-peers 10
+    address-family ipv4 unicast
+      route-reflector-client
+      next-hop-self all
+	  
+
+
+Spine-1# show ip bgp summary
+show ip bgp
+show ip route bgp
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.1, local AS number 54030
+BGP table version is 10, IPv4 Unicast config peers 4, capable peers 3
+4 network entries and 4 paths using 976 bytes of memory
+BGP attribute entries [2/344], BGP AS path entries [0/0]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.1       4 54030     287     284       10    0    0 00:13:59 1         
+10.30.4.3       4 54030      82      81       10    0    0 00:03:47 1         
+10.30.4.5       4 54030      79      78       10    0    0 00:03:38 1         
+Spine-1# show ip bgp
+BGP routing table information for VRF default, address family IPv4 Unicast
+BGP table version is 10, Local Router ID is 10.30.0.1
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+*>r10.30.0.1/32       0.0.0.0                  0        100      32768 ?
+*>i10.30.0.11/32      10.30.4.1                0        100          0 ?
+*>i10.30.0.12/32      10.30.4.3                0        100          0 ?
+*>i10.30.0.13/32      10.30.4.5                0        100          0 ?
+
+Spine-1# show ip route bgp
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.11/32, ubest/mbest: 1/0
+    *via 10.30.4.1, [200/0], 00:04:23, bgp-54030, internal, tag 54030
+10.30.0.12/32, ubest/mbest: 1/0
+    *via 10.30.4.3, [200/0], 00:03:47, bgp-54030, internal, tag 54030
+10.30.0.13/32, ubest/mbest: 1/0
+    *via 10.30.4.5, [200/0], 00:03:37, bgp-54030, internal, tag 54030
+	
+	
+#########################
+# Spine-2 Lo: 10.30.0.2 #
+#########################
+
+Spine-2# sh run bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul  8 12:17:46 2023
+!Time: Sat Jul  8 12:25:51 2023
+
+version 9.3(8) Bios:version  
+feature bgp
+
+router bgp 54030
+  router-id 10.30.0.2
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  neighbor 10.30.4.0/24
+    remote-as 54030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 9
+    maximum-peers 10
+    address-family ipv4 unicast
+      route-reflector-client
+      next-hop-self all
+	
+	
+	
+Spine-2# show ip bgp summary
+show ip bgp
+show ip route bgp
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.2, local AS number 54030
+BGP table version is 10, IPv4 Unicast config peers 4, capable peers 3
+4 network entries and 4 paths using 976 bytes of memory
+BGP attribute entries [2/344], BGP AS path entries [0/0]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.7       4 54030     290     288       10    0    0 00:14:14 1         
+10.30.4.9       4 54030      84      82       10    0    0 00:03:52 1         
+10.30.4.11      4 54030      80      79       10    0    0 00:03:41 1         
+Spine-2# show ip bgp
+BGP routing table information for VRF default, address family IPv4 Unicast
+BGP table version is 10, Local Router ID is 10.30.0.2
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+*>r10.30.0.2/32       0.0.0.0                  0        100      32768 ?
+*>i10.30.0.11/32      10.30.4.7                0        100          0 ?
+*>i10.30.0.12/32      10.30.4.9                0        100          0 ?
+*>i10.30.0.13/32      10.30.4.11               0        100          0 ?
+
+Spine-2# show ip route bgp
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.11/32, ubest/mbest: 1/0
+    *via 10.30.4.7, [200/0], 00:04:14, bgp-54030, internal, tag 54030
+10.30.0.12/32, ubest/mbest: 1/0
+    *via 10.30.4.9, [200/0], 00:03:52, bgp-54030, internal, tag 54030
+10.30.0.13/32, ubest/mbest: 1/0
+    *via 10.30.4.11, [200/0], 00:03:41, bgp-54030, internal, tag 54030
+
+
+
+##########################
+# Leaf-11 Lo: 10.30.0.11 #
+##########################
+
+Leaf-11# sh run bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul  8 12:17:44 2023
+!Time: Sat Jul  8 12:26:13 2023
+
+version 9.3(8) Bios:version  
+feature bgp
+
+router bgp 54030
+  router-id 10.30.0.11
+  reconnect-interval 10
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+    maximum-paths ibgp 64
+  template peer SPINE
+    remote-as 54030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 9
+    address-family ipv4 unicast
+  neighbor 10.30.4.0
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.6
+    inherit peer SPINE
+    description SPINE-2
+  neighbor 10.30.4.0/24
+    remote-as 54030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 9
+    maximum-peers 10
+    address-family ipv4 unicast
+      route-reflector-client
+      next-hop-self all
+
+
+Leaf-11# show ip bgp summary
+show ip bgp
+show ip route bgp
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.11, local AS number 54030
+BGP table version is 12, IPv4 Unicast config peers 3, capable peers 2
+5 network entries and 7 paths using 1460 bytes of memory
+BGP attribute entries [6/1032], BGP AS path entries [0/0]
+BGP community entries [0/0], BGP clusterlist entries [4/16]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.0       4 54030     290     289       12    0    0 00:14:08 3         
+10.30.4.6       4 54030     292     291       12    0    0 00:14:18 3         
+Leaf-11# show ip bgp
+BGP routing table information for VRF default, address family IPv4 Unicast
+BGP table version is 12, Local Router ID is 10.30.0.11
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+*>i10.30.0.1/32       10.30.4.0                0        100          0 ?
+*>i10.30.0.2/32       10.30.4.6                0        100          0 ?
+*>r10.30.0.11/32      0.0.0.0                  0        100      32768 ?
+*>i10.30.0.12/32      10.30.4.0                0        100          0 ?
+*|i                   10.30.4.6                0        100          0 ?
+*|i10.30.0.13/32      10.30.4.6                0        100          0 ?
+*>i                   10.30.4.0                0        100          0 ?
+
+Leaf-11# show ip route bgp
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 1/0
+    *via 10.30.4.0, [200/0], 00:04:03, bgp-54030, internal, tag 54030
+10.30.0.2/32, ubest/mbest: 1/0
+    *via 10.30.4.6, [200/0], 00:04:06, bgp-54030, internal, tag 54030
+10.30.0.12/32, ubest/mbest: 2/0
+    *via 10.30.4.0, [200/0], 00:03:56, bgp-54030, internal, tag 54030
+    *via 10.30.4.6, [200/0], 00:03:56, bgp-54030, internal, tag 54030
+10.30.0.13/32, ubest/mbest: 2/0
+    *via 10.30.4.0, [200/0], 00:03:47, bgp-54030, internal, tag 54030
+    *via 10.30.4.6, [200/0], 00:03:45, bgp-54030, internal, tag 54030
+	
+	
+##########################
+# Leaf-12 Lo: 10.30.0.12 #
+##########################
+
+Leaf-12# sh run bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul  8 12:17:41 2023
+!Time: Sat Jul  8 12:26:15 2023
+
+version 9.3(8) Bios:version  
+feature bgp
+
+router bgp 54030
+  router-id 10.30.0.12
+  reconnect-interval 10
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+    maximum-paths ibgp 64
+  template peer SPINE
+    remote-as 54030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 9
+    address-family ipv4 unicast
+  neighbor 10.30.4.2
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.8
+    inherit peer SPINE
+    description SPINE-2
+
+
+
+Leaf-12# show ip bgp summary
+show ip bgp
+show ip route bgp
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.12, local AS number 54030
+BGP table version is 10, IPv4 Unicast config peers 2, capable peers 2
+5 network entries and 7 paths using 1460 bytes of memory
+BGP attribute entries [6/1032], BGP AS path entries [0/0]
+BGP community entries [0/0], BGP clusterlist entries [4/16]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.2       4 54030      88      85       10    0    0 00:04:00 3         
+10.30.4.8       4 54030      87      85       10    0    0 00:04:00 3         
+Leaf-12# show ip bgp
+BGP routing table information for VRF default, address family IPv4 Unicast
+BGP table version is 10, Local Router ID is 10.30.0.12
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+*>i10.30.0.1/32       10.30.4.2                0        100          0 ?
+*>i10.30.0.2/32       10.30.4.8                0        100          0 ?
+*>i10.30.0.11/32      10.30.4.2                0        100          0 ?
+*|i                   10.30.4.8                0        100          0 ?
+*>r10.30.0.12/32      0.0.0.0                  0        100      32768 ?
+*|i10.30.0.13/32      10.30.4.8                0        100          0 ?
+*>i                   10.30.4.2                0        100          0 ?
+
+Leaf-12# show ip route bgp
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 1/0
+    *via 10.30.4.2, [200/0], 00:03:59, bgp-54030, internal, tag 54030
+10.30.0.2/32, ubest/mbest: 1/0
+    *via 10.30.4.8, [200/0], 00:03:59, bgp-54030, internal, tag 54030
+10.30.0.11/32, ubest/mbest: 2/0
+    *via 10.30.4.2, [200/0], 00:03:59, bgp-54030, internal, tag 54030
+    *via 10.30.4.8, [200/0], 00:03:59, bgp-54030, internal, tag 54030
+10.30.0.13/32, ubest/mbest: 2/0
+    *via 10.30.4.2, [200/0], 00:03:50, bgp-54030, internal, tag 54030
+    *via 10.30.4.8, [200/0], 00:03:48, bgp-54030, internal, tag 54030
+
+
+##########################
+# Leaf-13 Lo: 10.30.0.13 #
+##########################
+
+Leaf-13# sh run bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul  8 12:17:40 2023
+!Time: Sat Jul  8 12:26:20 2023
+
+version 9.3(8) Bios:version  
+feature bgp
+
+router bgp 54030
+  router-id 10.30.0.13
+  reconnect-interval 10
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+    maximum-paths ibgp 64
+  template peer SPINE
+    remote-as 54030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 9
+    address-family ipv4 unicast
+  neighbor 10.30.4.4
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.10
+    inherit peer SPINE
+    description SPINE-2
+
+
+Leaf-13# show ip bgp summary
+show ip bgp
+show ip route bgp
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.13, local AS number 54030
+BGP table version is 10, IPv4 Unicast config peers 2, capable peers 2
+5 network entries and 7 paths using 1460 bytes of memory
+BGP attribute entries [6/1032], BGP AS path entries [0/0]
+BGP community entries [0/0], BGP clusterlist entries [4/16]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.4       4 54030      86      83       10    0    0 00:03:55 3         
+10.30.4.10      4 54030      86      83       10    0    0 00:03:53 3         
+Leaf-13# show ip bgp
+BGP routing table information for VRF default, address family IPv4 Unicast
+BGP table version is 10, Local Router ID is 10.30.0.13
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+*>i10.30.0.1/32       10.30.4.4                0        100          0 ?
+*>i10.30.0.2/32       10.30.4.10               0        100          0 ?
+*|i10.30.0.11/32      10.30.4.10               0        100          0 ?
+*>i                   10.30.4.4                0        100          0 ?
+*|i10.30.0.12/32      10.30.4.10               0        100          0 ?
+*>i                   10.30.4.4                0        100          0 ?
+*>r10.30.0.13/32      0.0.0.0                  0        100      32768 ?
+
+Leaf-13# show ip route bgp
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.0.1/32, ubest/mbest: 1/0
+    *via 10.30.4.4, [200/0], 00:03:55, bgp-54030, internal, tag 54030
+10.30.0.2/32, ubest/mbest: 1/0
+    *via 10.30.4.10, [200/0], 00:03:53, bgp-54030, internal, tag 54030
+10.30.0.11/32, ubest/mbest: 2/0
+    *via 10.30.4.4, [200/0], 00:03:55, bgp-54030, internal, tag 54030
+    *via 10.30.4.10, [200/0], 00:03:53, bgp-54030, internal, tag 54030
+10.30.0.12/32, ubest/mbest: 2/0
+    *via 10.30.4.4, [200/0], 00:03:55, bgp-54030, internal, tag 54030
+    *via 10.30.4.10, [200/0], 00:03:53, bgp-54030, internal, tag 54030
+
+	
+	
+	
+	
+	
+	
+	

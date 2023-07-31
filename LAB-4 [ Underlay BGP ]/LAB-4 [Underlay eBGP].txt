@@ -1,0 +1,641 @@
+#############################################################
+#                          SPINE-1 
+#############################################################
+
+conf t
+hostname Spine-1
+feature bfd
+feature bgp
+!
+interface loopback0
+description Router_ID
+ip address 10.30.0.1/32
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+key chain UNDERLAY_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256  
+!
+!
+!
+interface Ethernet1/1
+description # Leaf-11 # 10.30.0.11 # Port # Ethernet1/1
+mtu 9216
+no ip redirects
+no switchport
+ip address 10.30.4.0/31
+no shutdown
+!
+interface Ethernet1/2
+description # Leaf-12 # 10.30.0.12 # Port # Ethernet1/1
+mtu 9216
+no ip redirects
+no switchport
+ip address 10.30.4.2/31
+no shutdown
+!
+interface Ethernet1/3
+description # Leaf-13 # 10.30.0.13 # Port # Ethernet1/1
+no switchport
+mtu 9216
+no ip redirects
+no switchport
+ip address 10.30.4.4/31
+no shutdown
+!  
+!
+!
+!
+exit
+copy run start
+
+
+#############################################################
+#                          SPINE-2
+#############################################################
+
+conf t
+hostname Spine-2
+feature bfd
+feature bgp
+!
+interface Loopback0
+description Router_ID
+ip address 10.30.0.2 255.255.255.255
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+key chain UNDERLAY_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256  
+!
+!
+int ethernet 1/1
+description # Leaf-11 # 10.30.0.11 # Port # Ethernet1/2
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.6 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Leaf-12 # 10.30.0.12 # Port # Ethernet1/2
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.8 255.255.255.254
+no shutdown
+!
+int ethernet 1/3
+description # Leaf-13 # 10.30.0.13 # Port # Ethernet1/2
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.10 255.255.255.254
+no shutdown
+!
+!  
+!
+!
+!
+exit
+copy run start
+
+#############################################################
+#                          LEAF-11
+#############################################################
+conf t
+hostname Leaf-11
+feature bfd
+feature bgp
+!
+interface Loopback0
+description Router_ID
+ip address 10.30.0.11 255.255.255.255
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+key chain UNDERLAY_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256  
+!
+!
+int ethernet 1/1
+description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+no switchport
+mtu 9216
+no ip redirects
+no switchportip address 10.30.4.1 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.7 255.255.255.254
+no shutdown
+!
+int ethernet 1/7
+description # Client-1 #
+shutdown
+! 
+!
+!
+!
+exit
+copy run start
+
+#############################################################
+#                          LEAF-12
+#############################################################
+conf t
+hostname Leaf-12
+feature bfd
+feature bgp
+!
+interface Loopback0
+description Router_ID
+ip address 10.30.0.12 255.255.255.255
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+key chain UNDERLAY_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256  
+!
+!
+!
+int ethernet 1/1
+description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.3 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.9 255.255.255.254
+no shutdown
+!
+int ethernet 1/7
+description # Client-1 #
+shutdown
+! 
+!
+!
+!
+exit
+copy run start
+
+
+#############################################################
+#                          LEAF-13
+#############################################################
+
+conf t
+hostname Leaf-13
+feature bfd
+feature bgp
+!
+interface Loopback0
+description Router_ID
+ip address 10.30.0.13 255.255.255.255
+!
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+!
+key chain UNDERLAY_KeyChain
+key 1
+key-string PASSWORD
+cryptographic-algorithm HMAC-SHA-256  
+!
+!
+!
+int ethernet 1/1
+description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.5 255.255.255.254
+no shutdown
+!
+int ethernet 1/2
+description # Spine-1 # 10.30.0.2 # Port # Ethernet1/2
+no switchport
+mtu 9216
+no ip redirects
+ip address 10.30.4.11 255.255.255.254
+no shutdown
+!
+int ethernet 1/7
+description # Client-3 #
+shutdown
+! 
+int ethernet 1/6
+description # Client-4 #
+shutdown
+! 
+!
+!
+!
+exit
+copy run start
+
+
+
+
+
+##################################
+SPINE-1 BGP SECTION
+##################################
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+
+router bgp 54030
+router-id 10.30.0.1
+reconnect-interval 10
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+maximum-path ibgp 64
+
+template peer LEAF
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+address-family ipv4 unicast
+
+neighbor 10.30.4.1 remote-as 54030
+inherit peer LEAF
+description Leaf-11
+
+neighbor 10.30.4.3 remote-as 54030
+inherit peer LEAF
+description Leaf-12
+
+neighbor 10.30.4.5 remote-as 54030
+inherit peer LEAF
+description Leaf-13
+
+##################################
+SPINE-2 BGP SECTION
+##################################
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+
+router bgp 54030
+router-id 10.30.0.2
+reconnect-interval 10
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+maximum-path ibgp 64
+
+template peer LEAF
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+address-family ipv4 unicast
+
+neighbor 10.30.4.7 remote-as 54030
+inherit peer LEAF
+description Leaf-11
+
+neighbor 10.30.4.9 remote-as 54030
+inherit peer LEAF
+description Leaf-12
+
+neighbor 10.30.4.11 remote-as 54030
+inherit peer LEAF
+description Leaf-13
+
+##################################
+LEAF BGP SECTION
+##################################
+
+router bgp 54030
+router-id 10.30.0.11
+neighbor 10.30.4.0/24 remote-as 54030
+maximum-peers 10
+timers 3 9
+address-family ipv4 unicast
+route-reflector-client
+next-hop-self all
+password BGP-SECRET
+
+router bgp 54030
+router-id 10.30.0.12
+neighbor 10.30.4.0/24 remote-as 54030
+maximum-peers 10
+timers 3 9
+address-family ipv4 unicast
+route-reflector-client
+next-hop-self all
+password BGP-SECRET
+
+router bgp 54030
+router-id 10.30.0.13
+neighbor 10.30.4.0/24 remote-as 54030
+maximum-peers 10
+timers 3 9
+address-family ipv4 unicast
+route-reflector-client
+next-hop-self all
+password BGP-SECRET
+
+#######################################
+
+
+
+
+
+#######################################
+# LEAF-11 BGP
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+!
+router bgp 54030
+router-id 10.30.0.11
+reconnect-interval 10
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+maximum-paths ibgp 64
+template peer SPINE
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+!	
+address-family ipv4 unicast
+neighbor 10.30.4.0
+inherit peer SPINE
+description SPINE-1
+neighbor 10.30.4.6
+inherit peer SPINE
+description SPINE-2
+!
+!
+!
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+!
+router bgp 54030
+router-id 10.30.0.12
+reconnect-interval 10
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+maximum-paths ibgp 64
+template peer SPINE
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+!	
+address-family ipv4 unicast
+neighbor 10.30.4.2
+inherit peer SPINE
+description SPINE-1
+neighbor 10.30.4.8
+inherit peer SPINE
+description SPINE-2
+!
+!
+!
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+!
+router bgp 54030
+router-id 10.30.0.13
+reconnect-interval 10
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+maximum-paths ibgp 64
+template peer SPINE
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+!	
+address-family ipv4 unicast
+neighbor 10.30.4.4
+inherit peer SPINE
+description SPINE-1
+neighbor 10.30.4.10
+inherit peer SPINE
+description SPINE-2
+!
+!
+!
+
+
+router bgp 54030
+template peer SPINE
+password BGP-SECRET
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+!
+router bgp 65031
+router-id 10.30.0.11
+maximum-paths 4
+bgp bestpath as-path multipath-relax
+
+template peer SPINE
+remote-as 65030
+password BGP-SECRET
+timers 1 3
+!	
+address-family ipv4 unicast
+neighbor 10.30.4.0
+inherit peer SPINE
+description SPINE-1
+neighbor 10.30.4.6
+inherit peer SPINE
+description SPINE-2
+
+
+
+
+
+   neighbor SPINES peer group
+   neighbor SPINES remote-as 65000
+   neighbor SPINES bfd
+   neighbor 198.18.0.0 peer group SPINES
+   neighbor 198.18.0.2 peer group SPINES
+   network 10.1.1.1/32
+
+
+
+
+
+#############
+SPINE-1
+#############
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+
+router bgp 65030
+router-id 10.30.0.1
+timers bgp 1 3
+maximum-paths 4
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+
+bgp listen range 198.18.0.0/15 peer-group LEAFS peer-filter AS_FILTER
+neighbor LEAFS peer group
+neighbor LEAFS bfd
+network 10.0.0.1/32
+
+
+
+
+
+
+
+
+
+
+
+router bgp 54030
+router-id 10.30.0.1
+neighbor 10.30.4.0/24
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+maximum-peers 10
+address-family ipv4 unicast
+route-reflector-client
+next-hop-self all
+!
+!
+!
+
+router bgp 54030
+password BGP-SECRET
+
+#############
+SPINE-2
+#############
+router bgp 54030
+router-id 10.30.0.2
+neighbor 10.30.4.0/24
+remote-as 54030
+password BGP-SECRET
+timers 3 9
+maximum-peers 10
+address-family ipv4 unicast
+route-reflector-client
+next-hop-self all
+!
+!
+!
+
+
+ip as-path access-list AS-PATH-LIST seq 10 permit "65031-65999"
+!
+route-map AS_FILTER permit 10
+  match as-number as-path-list AS-PATH-LIST 
+!
+!
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 
+!  
+!
+router bgp 65030
+  router-id 10.30.0.2
+  timers bgp 1 3
+  bestpath as-path multipath-relax
+  maxas-limit 3
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  neighbor 10.30.4.0/24 remote-as route-map AS_FILTER
+    bfd
+    description LEAF
+    password BGP-SECRET
+    timers 1 3
+	!
+	!
+	!
+	
+	
+ip as-path access-list AS-PATH-LIST seq 10 permit "65031:65999"
+route-map AS_FILTER permit 10
+match as-path AS-PATH-LIST 
+!
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+! 
+router bgp 65030
+router-id 10.30.0.2
+bestpath as-path multipath-relax
+maxas-limit 3
+log-neighbor-changes	
+address-family ipv4 unicast
+redistribute direct route-map REDISTRIBUTE_CONNECTED
+neighbor 10.30.4.0/24 remote-as route-map AS_FILTER
+bfd
+description LEAF
+password BGP-SECRET
+timers 1 3
+address-family ipv4 unicast
+
+
+
+
+
+
+
+
+ip as-path access-list AS-PATH-LIST seq 10 permit "65031:65999"
+route-map AS_FILTER permit 10
+match as-path AS-PATH-LIST 
+!
+route-map REDISTRIBUTE_CONNECTED permit 10
+match interface loopback0
+! 
+router bgp 65032
+  router-id 10.30.0.12
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description LEAF
+    password BGP-SECRET
+    timers 1 3
+    address-family ipv4 unicast
+  neighbor 10.30.4.2
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.8
+    inherit peer SPINE
+    description SPINE-2

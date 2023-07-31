@@ -1,0 +1,1526 @@
+
+sh run vlan
+sh run int nve 1
+sh nve peers
+sh run vrf L3VNI_Transit
+
+
+sh ip route hmm vrf L3VNI_Transit
+sh running-config bgp
+
+sh bgp l2vpn evpn summary
+sh bgp l2vpn evpn
+
+##############################################################################################################
+#                                                LEAF-11
+##############################################################################################################
+
+Leaf-11# sh run vlan
+sh run int nve 1
+sh nve peers
+sh run vrf L3VNI_Transit
+!Command: show running-config vlan
+!Running configuration last done at: Sat Jul 29 20:32:01 2023
+!Time: Sat Jul 29 23:28:18 2023
+
+version 10.3(1) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-11# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Sat Jul 29 20:32:01 2023
+!Time: Sat Jul 29 23:28:18 2023
+
+version 10.3(1) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+Leaf-11# sh nve peers
+Interface Peer-IP                                 State LearnType Uptime   Route
+r-Mac       
+--------- --------------------------------------  ----- --------- -------- -----
+------------
+nve1      10.30.1.12                              Up    CP        06:28:54 5004.
+0000.1b08   
+nve1      10.30.1.13                              Up    CP        06:35:35 5005.
+0000.1b08   
+
+Leaf-11# sh run vrf L3VNI_Transit
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Sat Jul 29 20:32:01 2023
+!Time: Sat Jul 29 23:28:21 2023
+
+version 10.3(1) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.11:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65031:13000 evpn
+router bgp 65031
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+
+
+
+
+Leaf-11# sh ip route hmm vrf L3VNI_Transit
+sh running-config bgpIP Route Table for VRF "L3VNI_Transit"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.10.1/32, ubest/mbest: 1/0, attached
+    *via 10.30.10.1, Vlan10, [190/0], 00:08:50, hmm
+10.30.30.1/32, ubest/mbest: 1/0, attached
+    *via 10.30.30.1, Vlan30, [190/0], 00:08:50, hmm
+
+Leaf-11# sh running-config bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul 29 20:32:01 2023
+!Time: Sat Jul 29 23:28:41 2023
+
+version 10.3(1) Bios:version  
+feature bgp
+
+router bgp 65031
+  router-id 10.30.0.11
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description SPINE_UNDERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.0
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.6
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.11:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.11:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.11:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.11:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65031:13000 evpn
+
+
+
+Leaf-11# sh bgp l2vpn evpn summary
+sh bgp l2vpn evpnBGP summary information for VRF default, address family L2VPN EVPN
+BGP router identifier 10.30.0.11, local AS number 65031
+BGP table version is 270, L2VPN EVPN config peers 2, capable peers 2
+55 network entries and 81 paths using 15180 bytes of memory
+BGP attribute entries [45/16200], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS    MsgRcvd    MsgSent   TblVer  InQ OutQ Up/Down  State/
+PfxRcd
+10.30.1.1       4 65030       8423       8365      270    0    0 06:32:15 22    
+    
+10.30.1.2       4 65030       8289       8230      270    0    0 05:57:31 22    
+    
+
+Neighbor        T    AS PfxRcd     Type-2     Type-3     Type-4     Type-5    
+10.30.1.1       I 65030 22         12         6          0          4         
+10.30.1.2       I 65030 22         12         6          0          4         
+Leaf-11# sh bgp l2vpn evpn
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 270, Local Router ID is 10.30.0.11
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.11:10    (L2VNI 10000)
+*>l[2]:[0]:[0]:[48]:[0050.7966.6806]:[0]:[0.0.0.0]/216
+                      10.30.1.11                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6807]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                                     0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 65033 i
+
+Route Distinguisher: 10.30.1.11:20    (L2VNI 20000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6808]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680a]:[0]:[0.0.0.0]/216
+                      10.30.1.11                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680b]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6808]:[32]:[10.30.20.3]/248
+                      10.30.1.13                                     0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680a]:[32]:[10.30.20.1]/248
+                      10.30.1.11                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680b]:[32]:[10.30.20.2]/248
+                      10.30.1.12                                     0 65030 65032 i
+*>l[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 65033 i
+
+Route Distinguisher: 10.30.1.11:30    (L2VNI 30000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680d]:[0]:[0.0.0.0]/216
+                      10.30.1.11                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                                     0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>l[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 65033 i
+
+Route Distinguisher: 10.30.1.12:10
+* e[2]:[0]:[0]:[48]:[0050.7966.6807]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+* e                   10.30.1.12                                     0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:20
+* e[2]:[0]:[0]:[48]:[0050.7966.680b]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680b]:[32]:[10.30.20.2]/248
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+* e                   10.30.1.12                                     0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:30
+* e[2]:[0]:[0]:[48]:[0050.7966.680e]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+* e                   10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+* e                   10.30.1.12                                     0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:13000
+* e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.12                                     0 65030 65032 ?
+*>e                   10.30.1.12                                     0 65030 65032 ?
+* e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.12                                     0 65030 65032 ?
+*>e                   10.30.1.12                                     0 65030 65032 ?
+
+Route Distinguisher: 10.30.1.13:10
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 65033 i
+* e                   10.30.1.13                                     0 65030 65033 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                                     0 65030 65033 i
+*>e                   10.30.1.13                                     0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 65033 i
+* e                   10.30.1.13                                     0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:20
+* e[2]:[0]:[0]:[48]:[0050.7966.6808]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 65033 i
+*>e                   10.30.1.13                                     0 65030 65033 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6808]:[32]:[10.30.20.3]/248
+                      10.30.1.13                                     0 65030 65033 i
+*>e                   10.30.1.13                                     0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 65033 i
+* e                   10.30.1.13                                     0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:30
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 65033 i
+* e                   10.30.1.13                                     0 65030 65033 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                                     0 65030 65033 i
+*>e                   10.30.1.13                                     0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 65033 i
+* e                   10.30.1.13                                     0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:13000
+* e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.13                                     0 65030 65033 ?
+*>e                   10.30.1.13                                     0 65030 65033 ?
+* e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.13                                     0 65030 65033 ?
+*>e                   10.30.1.13                                     0 65030 65033 ?
+
+Route Distinguisher: 10.30.1.11:13000    (L3VNI 13000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                                     0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                                     0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.11               0        100      32768 ?
+* e                   10.30.1.13                                     0 65030 65033 ?
+* e                   10.30.1.12                                     0 65030 65032 ?
+*>l[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.11               0        100      32768 ?
+* e                   10.30.1.13                                     0 65030 65033 ?
+* e                   10.30.1.12                                     0 65030 65032 ?
+
+
+
+
+
+
+##############################################################################################################
+#                                                LEAF-12
+##############################################################################################################
+
+
+sh run vlan
+sh run int nve 1
+sh nve peers
+sh run vrf L3VNI_Transit
+
+
+sh ip route hmm vrf L3VNI_Transit
+sh running-config bgp
+
+sh bgp l2vpn evpn summary
+sh bgp l2vpn evpn
+
+
+
+
+
+Leaf-12# sh run vlan
+sh run int nve 1
+sh nve peers
+
+!Command: show running-config vlan
+!Running configuration last done at: Sat Jul 29 20:32:41 2023
+!Time: Sat Jul 29 23:59:40 2023
+
+version 10.3(1) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-12# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Sat Jul 29 20:32:41 2023
+!Time: Sat Jul 29 23:59:40 2023
+
+version 10.3(1) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+Leaf-12# sh nve peers
+Interface Peer-IP                                 State LearnType Uptime   Route
+r-Mac       
+--------- --------------------------------------  ----- --------- -------- -----
+------------
+nve1      10.30.1.11                              Up    CP        07:00:55 5003.
+0000.1b08   
+nve1      10.30.1.13                              Up    CP        07:00:55 5005.
+0000.1b08   
+
+Leaf-12# sh run vrf L3VNI_Transit
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Sat Jul 29 20:32:41 2023
+!Time: Sat Jul 29 23:59:40 2023
+
+version 10.3(1) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.12:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65032:13000 evpn
+router bgp 65032
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+
+
+
+Leaf-12# sh ip route hmm vrf L3VNI_Transit
+sh running-config bgp
+IP Route Table for VRF "L3VNI_Transit"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.10.2/32, ubest/mbest: 1/0, attached
+    *via 10.30.10.2, Vlan10, [190/0], 00:33:51, hmm
+10.30.30.2/32, ubest/mbest: 1/0, attached
+    *via 10.30.30.2, Vlan30, [190/0], 00:27:16, hmm
+
+Leaf-12# sh running-config bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sat Jul 29 20:32:41 2023
+!Time: Sun Jul 30 00:00:12 2023
+
+version 10.3(1) Bios:version  
+feature bgp
+
+router bgp 65032
+  router-id 10.30.0.12
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description LEAF
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.2
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.8
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.12:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.12:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.12:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.12:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65032:13000 evpn
+
+
+
+Leaf-12# sh bgp l2vpn evpn summary
+sh bgp l2vpn evpn
+
+BGP summary information for VRF default, address family L2VPN EVPN
+BGP router identifier 10.30.0.12, local AS number 65032
+BGP table version is 257, L2VPN EVPN config peers 2, capable peers 2
+55 network entries and 81 paths using 15180 bytes of memory
+BGP attribute entries [45/16200], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS    MsgRcvd    MsgSent   TblVer  InQ OutQ Up/Down  State/
+PfxRcd
+10.30.1.1       4 65030       8479       8434      257    0    0 06:42:10 22    
+    
+10.30.1.2       4 65030       8486       8445      257    0    0 07:02:30 22    
+    
+
+Neighbor        T    AS PfxRcd     Type-2     Type-3     Type-4     Type-5    
+10.30.1.1       I 65030 22         12         6          0          4         
+10.30.1.2       I 65030 22         12         6          0          4         
+Leaf-12# sh bgp l2vpn evpn
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 257, Local Router ID is 10.30.0.12
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.11:10
+* e[2]:[0]:[0]:[48]:[0050.7966.6806]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e                   10.30.1.11                                     0 65030 650
+31 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e                   10.30.1.11                                     0 65030 650
+31 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 650
+31 i
+* e                   10.30.1.11                                     0 65030 650
+31 i
+
+Route Distinguisher: 10.30.1.11:20
+* e[2]:[0]:[0]:[48]:[0050.7966.680a]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e                   10.30.1.11                                     0 65030 650
+31 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680a]:[32]:[10.30.20.1]/248
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e                   10.30.1.11                                     0 65030 650
+31 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 650
+31 i
+* e                   10.30.1.11                                     0 65030 650
+31 i
+
+Route Distinguisher: 10.30.1.11:30
+* e[2]:[0]:[0]:[48]:[0050.7966.680d]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e                   10.30.1.11                                     0 65030 650
+31 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e                   10.30.1.11                                     0 65030 650
+31 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 650
+31 i
+* e                   10.30.1.11                                     0 65030 650
+31 i
+
+Route Distinguisher: 10.30.1.11:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.11                                     0 65030 650
+31 ?
+* e                   10.30.1.11                                     0 65030 650
+31 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.11                                     0 65030 650
+31 ?
+* e                   10.30.1.11                                     0 65030 650
+31 ?
+
+Route Distinguisher: 10.30.1.12:10    (L2VNI 10000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6806]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.6807]:[0]:[0.0.0.0]/216
+                      10.30.1.12                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 650
+33 i
+
+Route Distinguisher: 10.30.1.12:20    (L2VNI 20000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6808]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680a]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680b]:[0]:[0.0.0.0]/216
+                      10.30.1.12                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6808]:[32]:[10.30.20.3]/248
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680a]:[32]:[10.30.20.1]/248
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680b]:[32]:[10.30.20.2]/248
+                      10.30.1.12                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 650
+33 i
+
+Route Distinguisher: 10.30.1.12:30    (L2VNI 30000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680d]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680e]:[0]:[0.0.0.0]/216
+                      10.30.1.12                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 650
+31 i
+*>l[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 650
+33 i
+
+Route Distinguisher: 10.30.1.13:10
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 650
+33 i
+* e                   10.30.1.13                                     0 65030 650
+33 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e                   10.30.1.13                                     0 65030 650
+33 i
+* e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e                   10.30.1.13                                     0 65030 650
+33 i
+
+Route Distinguisher: 10.30.1.13:20
+*>e[2]:[0]:[0]:[48]:[0050.7966.6808]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 650
+33 i
+* e                   10.30.1.13                                     0 65030 650
+33 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6808]:[32]:[10.30.20.3]/248
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e                   10.30.1.13                                     0 65030 650
+33 i
+* e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e                   10.30.1.13                                     0 65030 650
+33 i
+
+Route Distinguisher: 10.30.1.13:30
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[0]:[0.0.0.0]/216
+                      10.30.1.13                                     0 65030 650
+33 i
+* e                   10.30.1.13                                     0 65030 650
+33 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e                   10.30.1.13                                     0 65030 650
+33 i
+* e[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e                   10.30.1.13                                     0 65030 650
+33 i
+
+Route Distinguisher: 10.30.1.13:13000
+* e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.13                                     0 65030 650
+33 ?
+*>e                   10.30.1.13                                     0 65030 650
+33 ?
+* e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.13                                     0 65030 650
+33 ?
+*>e                   10.30.1.13                                     0 65030 650
+33 ?
+
+Route Distinguisher: 10.30.1.12:13000    (L3VNI 13000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                                     0 65030 650
+31 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                                     0 65030 650
+33 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                                     0 65030 650
+31 i
+* e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.11                                     0 65030 650
+31 ?
+* e                   10.30.1.13                                     0 65030 650
+33 ?
+*>l                   10.30.1.12               0        100      32768 ?
+* e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.11                                     0 65030 650
+31 ?
+* e                   10.30.1.13                                     0 65030 650
+33 ?
+*>l                   10.30.1.12               0        100      32768 ?
+
+
+
+##############################################################################################################
+#                                                LEAF-13
+##############################################################################################################
+
+
+sh run vlan
+sh run int nve 1
+sh nve peers
+sh run vrf L3VNI_Transit
+
+
+sh ip route hmm vrf L3VNI_Transit
+sh running-config bgp
+
+sh bgp l2vpn evpn summary
+sh bgp l2vpn evpn
+
+
+
+Leaf-13# sh run vlan
+sh run int nve 1
+sh nve peers
+
+!Command: show running-config vlan
+!Running configuration last done at: Sun Jul 30 00:07:12 2023
+!Time: Sun Jul 30 00:18:10 2023
+
+version 10.3(1) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-13# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Sun Jul 30 00:07:12 2023
+!Time: Sun Jul 30 00:18:10 2023
+
+version 10.3(1) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+Leaf-13# sh nve peers
+Interface Peer-IP                                 State LearnType Uptime   Route
+r-Mac       
+--------- --------------------------------------  ----- --------- -------- -----
+------------
+nve1      10.30.1.11                              Up    CP        07:25:53 5003.
+0000.1b08   
+nve1      10.30.1.12                              Up    CP        07:19:11 5004.
+0000.1b08   
+
+Leaf-13# sh run vrf L3VNI_Transit
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Sun Jul 30 00:07:12 2023
+!Time: Sun Jul 30 00:18:11 2023
+
+version 10.3(1) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.13:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65033:13000 evpn
+router bgp 65033
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+	  
+	  
+	  
+	  
+Leaf-13# sh ip route hmm vrf L3VNI_Transit
+sh running-config bgpIP Route Table for VRF "L3VNI_Transit"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.10.3/32, ubest/mbest: 1/0, attached
+    *via 10.30.10.3, Vlan10, [190/0], 01:02:15, hmm
+10.30.30.3/32, ubest/mbest: 1/0, attached
+    *via 10.30.30.3, Vlan30, [190/0], 01:02:15, hmm
+
+Leaf-13# sh running-config bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Sun Jul 30 00:07:12 2023
+!Time: Sun Jul 30 00:18:39 2023
+
+version 10.3(1) Bios:version  
+feature bgp
+
+router bgp 65033
+  router-id 10.30.0.13
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description LEAF
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.4
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.10
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.13:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.13:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.13:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.13:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target export 65033:13000 evpn	  
+	  
+
+
+Leaf-13# sh bgp l2vpn evpn summary
+sh bgp l2vpn evpn
+BGP summary information for VRF default, address family L2VPN EVPN
+BGP router identifier 10.30.0.13, local AS number 65033
+BGP table version is 256, L2VPN EVPN config peers 2, capable peers 2
+55 network entries and 81 paths using 15180 bytes of memory
+BGP attribute entries [45/16200], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS    MsgRcvd    MsgSent   TblVer  InQ OutQ Up/Down  State/
+PfxRcd
+10.30.1.1       4 65030       9029       8991      256    0    0 07:00:49 22    
+    
+10.30.1.2       4 65030       8850       8817      256    0    0 07:21:01 22    
+    
+
+Neighbor        T    AS PfxRcd     Type-2     Type-3     Type-4     Type-5    
+10.30.1.1       I 65030 22         12         6          0          4         
+10.30.1.2       I 65030 22         12         6          0          4         
+Leaf-13# sh bgp l2vpn evpn
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 256, Local Router ID is 10.30.0.13
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.11:10
+* e[2]:[0]:[0]:[48]:[0050.7966.6806]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+* e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:20
+* e[2]:[0]:[0]:[48]:[0050.7966.680a]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680a]:[32]:[10.30.20.1]/248
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+* e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:30
+* e[2]:[0]:[0]:[48]:[0050.7966.680d]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+* e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 65031 i
+*>e                   10.30.1.11                                     0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:13000
+* e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.11                                     0 65030 65031 ?
+*>e                   10.30.1.11                                     0 65030 65031 ?
+* e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.11                                     0 65030 65031 ?
+*>e                   10.30.1.11                                     0 65030 65031 ?
+
+Route Distinguisher: 10.30.1.12:10
+* e[2]:[0]:[0]:[48]:[0050.7966.6807]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:20
+* e[2]:[0]:[0]:[48]:[0050.7966.680b]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680b]:[32]:[10.30.20.2]/248
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:30
+* e[2]:[0]:[0]:[48]:[0050.7966.680e]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+* e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>e                   10.30.1.12                                     0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.12                                     0 65030 65032 ?
+* e                   10.30.1.12                                     0 65030 65032 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.12                                     0 65030 65032 ?
+* e                   10.30.1.12                                     0 65030 65032 ?
+
+Route Distinguisher: 10.30.1.13:10    (L2VNI 10000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6806]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6807]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.6809]:[0]:[0.0.0.0]/216
+                      10.30.1.13                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.6809]:[32]:[10.30.10.3]/272
+                      10.30.1.13                        100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>l[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                        100      32768 i
+
+Route Distinguisher: 10.30.1.13:20    (L2VNI 20000)
+*>l[2]:[0]:[0]:[48]:[0050.7966.6808]:[0]:[0.0.0.0]/216
+                      10.30.1.13                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680a]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680b]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.6808]:[32]:[10.30.20.3]/248
+                      10.30.1.13                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680a]:[32]:[10.30.20.1]/248
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680b]:[32]:[10.30.20.2]/248
+                      10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>l[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                        100      32768 i
+
+Route Distinguisher: 10.30.1.13:30    (L2VNI 30000)
+*>l[2]:[0]:[0]:[48]:[0050.7966.680c]:[0]:[0.0.0.0]/216
+                      10.30.1.13                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680d]:[0]:[0.0.0.0]/216
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[0]:[0.0.0.0]/216
+                      10.30.1.12                                     0 65030 65032 i
+*>l[2]:[0]:[0]:[48]:[0050.7966.680c]:[32]:[10.30.30.3]/272
+                      10.30.1.13                        100      32768 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.11]/88
+                      10.30.1.11                                     0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.12]/88
+                      10.30.1.12                                     0 65030 65032 i
+*>l[3]:[0]:[32]:[10.30.1.13]/88
+                      10.30.1.13                        100      32768 i
+
+Route Distinguisher: 10.30.1.13:13000    (L3VNI 13000)
+*>e[2]:[0]:[0]:[48]:[0050.7966.6806]:[32]:[10.30.10.1]/272
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.6807]:[32]:[10.30.10.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680d]:[32]:[10.30.30.1]/272
+                      10.30.1.11                                     0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[0050.7966.680e]:[32]:[10.30.30.2]/272
+                      10.30.1.12                                     0 65030 65032 i
+*>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.13               0        100      32768 ?
+* e                   10.30.1.11                                     0 65030 65031 ?
+* e                   10.30.1.12                                     0 65030 65032 ?
+*>l[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.13               0        100      32768 ?
+* e                   10.30.1.11                                     0 65030 65031 ?
+* e                   10.30.1.12                                     0 65030 65032 ?
+
+
+
+#########################################################################################
+#                                        PROM                                           #
+#########################################################################################
+
+PROM_CLNT-1> ping 10.30.10.2
+
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=64 time=25.383 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=64 time=16.302 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=64 time=25.934 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=64 time=31.110 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=64 time=10.073 ms
+
+PROM_CLNT-1> ping 10.30.10.3
+
+84 bytes from 10.30.10.3 icmp_seq=1 ttl=64 time=19.851 ms
+84 bytes from 10.30.10.3 icmp_seq=2 ttl=64 time=13.091 ms
+84 bytes from 10.30.10.3 icmp_seq=3 ttl=64 time=10.345 ms
+84 bytes from 10.30.10.3 icmp_seq=4 ttl=64 time=14.054 ms
+84 bytes from 10.30.10.3 icmp_seq=5 ttl=64 time=13.834 ms
+
+####
+
+PROM_CLNT-2> ping 10.30.10.1
+
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=64 time=50.923 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=64 time=12.142 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=64 time=10.424 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=64 time=11.578 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=64 time=9.851 ms
+
+PROM_CLNT-2> ping 10.30.10.3
+
+84 bytes from 10.30.10.3 icmp_seq=1 ttl=64 time=20.343 ms
+84 bytes from 10.30.10.3 icmp_seq=2 ttl=64 time=9.346 ms
+84 bytes from 10.30.10.3 icmp_seq=3 ttl=64 time=21.444 ms
+84 bytes from 10.30.10.3 icmp_seq=4 ttl=64 time=16.193 ms
+84 bytes from 10.30.10.3 icmp_seq=5 ttl=64 time=8.071 ms
+
+####
+
+PROM_CLNT-3> ping 10.30.10.1                                         
+
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=64 time=48.281 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=64 time=9.307 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=64 time=24.152 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=64 time=12.150 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=64 time=12.081 ms
+
+PROM_CLNT-3> ping 10.30.10.2
+
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=64 time=20.384 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=64 time=14.126 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=64 time=14.294 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=64 time=15.140 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=64 time=30.496 ms
+
+
+#########################################################################################
+#                                        TEST                                           #
+#########################################################################################
+
+
+TEST_CLNT-1> ping 10.30.20.2       
+
+84 bytes from 10.30.20.2 icmp_seq=1 ttl=64 time=16.500 ms
+84 bytes from 10.30.20.2 icmp_seq=2 ttl=64 time=21.230 ms
+84 bytes from 10.30.20.2 icmp_seq=3 ttl=64 time=19.524 ms
+84 bytes from 10.30.20.2 icmp_seq=4 ttl=64 time=17.774 ms
+84 bytes from 10.30.20.2 icmp_seq=5 ttl=64 time=13.597 ms
+
+TEST_CLNT-1> ping 10.30.20.3
+
+10.30.20.3 icmp_seq=1 timeout
+84 bytes from 10.30.20.3 icmp_seq=2 ttl=64 time=17.049 ms
+84 bytes from 10.30.20.3 icmp_seq=3 ttl=64 time=28.168 ms
+84 bytes from 10.30.20.3 icmp_seq=4 ttl=64 time=18.825 ms
+84 bytes from 10.30.20.3 icmp_seq=5 ttl=64 time=9.564 ms
+
+####
+TEST_CLNT-2> ping 10.30.20.1
+
+84 bytes from 10.30.20.1 icmp_seq=1 ttl=64 time=31.619 ms
+84 bytes from 10.30.20.1 icmp_seq=2 ttl=64 time=9.893 ms
+84 bytes from 10.30.20.1 icmp_seq=3 ttl=64 time=10.763 ms
+84 bytes from 10.30.20.1 icmp_seq=4 ttl=64 time=17.539 ms
+84 bytes from 10.30.20.1 icmp_seq=5 ttl=64 time=18.815 ms
+
+TEST_CLNT-2> ping 10.30.20.3
+
+84 bytes from 10.30.20.3 icmp_seq=1 ttl=64 time=31.820 ms
+84 bytes from 10.30.20.3 icmp_seq=2 ttl=64 time=11.367 ms
+84 bytes from 10.30.20.3 icmp_seq=3 ttl=64 time=12.500 ms
+84 bytes from 10.30.20.3 icmp_seq=4 ttl=64 time=12.797 ms
+84 bytes from 10.30.20.3 icmp_seq=5 ttl=64 time=12.774 ms
+
+####
+
+TEST_CLNT-3> ping 10.30.20.1
+
+84 bytes from 10.30.20.1 icmp_seq=1 ttl=64 time=29.925 ms
+84 bytes from 10.30.20.1 icmp_seq=2 ttl=64 time=10.934 ms
+84 bytes from 10.30.20.1 icmp_seq=3 ttl=64 time=12.558 ms
+84 bytes from 10.30.20.1 icmp_seq=4 ttl=64 time=12.138 ms
+84 bytes from 10.30.20.1 icmp_seq=5 ttl=64 time=17.551 ms
+
+TEST_CLNT-3> ping 10.30.20.2
+
+84 bytes from 10.30.20.2 icmp_seq=1 ttl=64 time=28.370 ms
+84 bytes from 10.30.20.2 icmp_seq=2 ttl=64 time=9.578 ms
+84 bytes from 10.30.20.2 icmp_seq=3 ttl=64 time=10.624 ms
+84 bytes from 10.30.20.2 icmp_seq=4 ttl=64 time=10.201 ms
+84 bytes from 10.30.20.2 icmp_seq=5 ttl=64 time=40.096 ms
+
+
+#########################################################################################
+#                                        PSI                                            #
+#########################################################################################
+
+PSI_CLNT-1> ping 10.30.30.2
+
+84 bytes from 10.30.30.2 icmp_seq=1 ttl=64 time=34.062 ms
+84 bytes from 10.30.30.2 icmp_seq=2 ttl=64 time=12.869 ms
+84 bytes from 10.30.30.2 icmp_seq=3 ttl=64 time=15.400 ms
+84 bytes from 10.30.30.2 icmp_seq=4 ttl=64 time=10.793 ms
+84 bytes from 10.30.30.2 icmp_seq=5 ttl=64 time=11.156 ms
+
+PSI_CLNT-1> ping 10.30.30.3
+
+84 bytes from 10.30.30.3 icmp_seq=1 ttl=64 time=29.037 ms
+84 bytes from 10.30.30.3 icmp_seq=2 ttl=64 time=16.199 ms
+84 bytes from 10.30.30.3 icmp_seq=3 ttl=64 time=19.505 ms
+84 bytes from 10.30.30.3 icmp_seq=4 ttl=64 time=15.502 ms
+84 bytes from 10.30.30.3 icmp_seq=5 ttl=64 time=12.405 ms
+
+####
+
+PSI_CLNT-2> ping 10.30.30.1      
+
+84 bytes from 10.30.30.1 icmp_seq=1 ttl=64 time=30.263 ms
+84 bytes from 10.30.30.1 icmp_seq=2 ttl=64 time=11.900 ms
+84 bytes from 10.30.30.1 icmp_seq=3 ttl=64 time=14.066 ms
+84 bytes from 10.30.30.1 icmp_seq=4 ttl=64 time=22.609 ms
+84 bytes from 10.30.30.1 icmp_seq=5 ttl=64 time=16.821 ms
+
+PSI_CLNT-2> ping 10.30.30.3
+
+84 bytes from 10.30.30.3 icmp_seq=1 ttl=64 time=28.304 ms
+84 bytes from 10.30.30.3 icmp_seq=2 ttl=64 time=10.736 ms
+84 bytes from 10.30.30.3 icmp_seq=3 ttl=64 time=35.652 ms
+84 bytes from 10.30.30.3 icmp_seq=4 ttl=64 time=8.918 ms
+84 bytes from 10.30.30.3 icmp_seq=5 ttl=64 time=8.836 ms
+
+####
+
+PSI_CLNT-3> ping 10.30.30.1      
+
+84 bytes from 10.30.30.1 icmp_seq=1 ttl=64 time=37.810 ms
+84 bytes from 10.30.30.1 icmp_seq=2 ttl=64 time=14.323 ms
+84 bytes from 10.30.30.1 icmp_seq=3 ttl=64 time=21.763 ms
+84 bytes from 10.30.30.1 icmp_seq=4 ttl=64 time=15.488 ms
+84 bytes from 10.30.30.1 icmp_seq=5 ttl=64 time=30.179 ms
+
+PSI_CLNT-3> ping 10.30.30.2
+
+84 bytes from 10.30.30.2 icmp_seq=1 ttl=64 time=22.463 ms
+84 bytes from 10.30.30.2 icmp_seq=2 ttl=64 time=8.203 ms
+84 bytes from 10.30.30.2 icmp_seq=3 ttl=64 time=20.297 ms
+84 bytes from 10.30.30.2 icmp_seq=4 ttl=64 time=15.093 ms
+84 bytes from 10.30.30.2 icmp_seq=5 ttl=64 time=10.804 ms
+
+
+##########################################################################################
+
+Не разобрался 
+
+PROM_CLNT-1> ping 10.30.30.2
+
+84 bytes from 10.30.30.2 icmp_seq=1 ttl=62 time=40.403 ms
+84 bytes from 10.30.30.2 icmp_seq=2 ttl=62 time=13.132 ms
+84 bytes from 10.30.30.2 icmp_seq=3 ttl=62 time=19.446 ms
+84 bytes from 10.30.30.2 icmp_seq=4 ttl=62 time=25.962 ms
+84 bytes from 10.30.30.2 icmp_seq=5 ttl=62 time=18.385 ms
+
+PROM_CLNT-1> ping 10.30.30.3
+
+84 bytes from 10.30.30.3 icmp_seq=1 ttl=62 time=42.078 ms
+84 bytes from 10.30.30.3 icmp_seq=2 ttl=62 time=22.680 ms
+84 bytes from 10.30.30.3 icmp_seq=3 ttl=62 time=16.743 ms
+84 bytes from 10.30.30.3 icmp_seq=4 ttl=62 time=35.655 ms
+84 bytes from 10.30.30.3 icmp_seq=5 ttl=62 time=15.394 ms
+
+
+PROM_CLNT-1> ping 10.30.30.1
+
+84 bytes from 10.30.30.1 icmp_seq=1 ttl=63 time=7.654 ms
+84 bytes from 10.30.30.1 icmp_seq=2 ttl=63 time=3.577 ms
+84 bytes from 10.30.30.1 icmp_seq=3 ttl=63 time=3.506 ms
+84 bytes from 10.30.30.1 icmp_seq=4 ttl=63 time=6.215 ms
+84 bytes from 10.30.30.1 icmp_seq=5 ttl=63 time=3.423 ms
+
+
+##########################################################################################
+
+PSI_CLNT-1> ping 10.30.10.2
+
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=62 time=36.909 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=62 time=14.865 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=62 time=17.191 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=62 time=23.310 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=62 time=15.860 ms
+
+PSI_CLNT-1> ping 10.30.10.3
+
+10.30.10.3 icmp_seq=1 timeout
+10.30.10.3 icmp_seq=2 timeout
+10.30.10.3 icmp_seq=3 timeout
+10.30.10.3 icmp_seq=4 timeout
+10.30.10.3 icmp_seq=5 timeout
+
+PSI_CLNT-1> ping 10.30.10.1
+
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=63 time=12.840 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=63 time=4.101 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=63 time=3.074 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=63 time=4.133 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=63 time=2.822 ms
+
+
+####
+
+PSI_CLNT-2> ping 10.30.10.1
+
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=62 time=39.173 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=62 time=26.780 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=62 time=17.073 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=62 time=20.514 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=62 time=14.027 ms
+
+PSI_CLNT-2> ping 10.30.10.3
+
+10.30.10.3 icmp_seq=1 timeout
+10.30.10.3 icmp_seq=2 timeout
+10.30.10.3 icmp_seq=3 timeout
+10.30.10.3 icmp_seq=4 timeout
+10.30.10.3 icmp_seq=5 timeout
+
+PSI_CLNT-2> ping 10.30.10.2
+
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=63 time=10.233 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=63 time=4.531 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=63 time=3.628 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=63 time=8.582 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=63 time=4.773 ms
+
+
+####
+
+PSI_CLNT-3> ping 10.30.10.1
+
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=62 time=50.453 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=62 time=10.212 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=62 time=13.504 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=62 time=10.355 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=62 time=12.701 ms
+
+PSI_CLNT-3> ping 10.30.10.2
+
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=62 time=48.839 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=62 time=16.918 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=62 time=26.427 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=62 time=13.712 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=62 time=15.751 ms
+
+PSI_CLNT-3> 
+PSI_CLNT-3> ping 10.30.10.3
+
+10.30.10.3 icmp_seq=1 timeout
+10.30.10.3 icmp_seq=2 timeout
+10.30.10.3 icmp_seq=3 timeout
+10.30.10.3 icmp_seq=4 timeout
+10.30.10.3 icmp_seq=5 timeout
+
+
+
+
+
+
+
+
+

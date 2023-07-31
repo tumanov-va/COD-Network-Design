@@ -1,0 +1,2086 @@
+
+
+sh run vlan
+sh run vrf FAILOVER 
+sh run vrf L3VNI_Transit
+
+
+sh run int port-channel all
+sh port-channel summary
+sh run int nve 1
+
+sh run vpc
+sh vpc brief
+sh vpc role 
+sh run bgp
+sh ip bgp summary
+
+#################################################################################################
+# 											Leaf-11												#
+#################################################################################################
+
+Leaf-11# sh run vlan
+sh run vrf FAILOVER 
+!Command: show running-config vlan
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:26:13 2023
+
+version 9.3(10) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  name L3VNI_Transit_SVI
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-11# sh run vrf FAILOVER 
+
+!Command: show running-config vrf FAILOVER
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:26:14 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface port-channel100
+  vrf member FAILOVER
+
+vrf context FAILOVER
+
+
+Leaf-11# sh run vrf L3VNI_Transit
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:19:10 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.11:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65031:13000 evpn
+router bgp 65031
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+
+
+Leaf-11# 
+Leaf-11# sh run int port-channel all
+
+!Command: show running-config interface port-channel2, port-channel100, port-cha
+nnel200
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:19:18 2023
+
+version 9.3(10) Bios:version  
+
+interface port-channel2
+  description # CLIENT-1 #
+  switchport mode trunk
+  vpc 10
+
+interface port-channel100
+  description # VPC-FAILOVER-LINK #
+  no switchport
+  vrf member FAILOVER
+  ip address 1.1.1.1/30
+
+interface port-channel200
+  description # VPC-PEER-LINK #
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+Leaf-11# sh port-channel summary
+Flags:  D - Down        P - Up in port-channel (members)
+        I - Individual  H - Hot-standby (LACP only)
+        s - Suspended   r - Module-removed
+        b - BFD Session Wait
+        S - Switched    R - Routed
+        U - Up (port-channel)
+        p - Up in delay-lacp mode (member)
+        M - Not in use. Min-links not met
+--------------------------------------------------------------------------------
+Group Port-       Type     Protocol  Member Ports
+      Channel
+--------------------------------------------------------------------------------
+2     Po2(SU)     Eth      LACP      Eth1/7(P)    
+100   Po100(RU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)    
+200   Po200(SU)   Eth      LACP      Eth1/5(P)    Eth1/6(P)    
+Leaf-11# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:19:27 2023
+
+version 9.3(10) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+Leaf-11# 
+Leaf-11# 
+Leaf-11# 
+Leaf-11# sh run vpc
+sh vpc brief
+!Command: show running-config vpc
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:19:34 2023
+
+version 9.3(10) Bios:version  
+feature vpc
+
+vpc domain 10
+  peer-switch
+  role priority 5
+  peer-keepalive destination 1.1.1.2 source 1.1.1.1 vrf FAILOVER
+  delay restore 10
+  peer-gateway
+  ip arp synchronize
+
+interface port-channel2
+  vpc 10
+
+interface port-channel200
+  vpc peer-link
+
+Leaf-11# sh vpc brief
+Legend:
+                (*) - local vPC is down, forwarding via vPC peer-link
+
+vPC domain id                     : 10  
+Peer status                       : peer adjacency formed ok      
+vPC keep-alive status             : peer is alive                 
+Configuration consistency status  : success 
+Per-vlan consistency status       : success                       
+Type-2 consistency status         : success 
+vPC role                          : primary, operational secondary
+Number of vPCs configured         : 1   
+Peer Gateway                      : Enabled
+Dual-active excluded VLANs        : -
+Graceful Consistency Check        : Enabled
+Auto-recovery status              : Disabled
+Delay-restore status              : Timer is off.(timeout = 10s)
+Delay-restore SVI status          : Timer is off.(timeout = 10s)
+Operational Layer3 Peer-router    : Disabled
+Virtual-peerlink mode             : Disabled
+
+vPC Peer-link status
+---------------------------------------------------------------------
+id    Port   Status Active vlans    
+--    ----   ------ -------------------------------------------------
+1     Po200  up     1,10,13,20,30                                               
+         
+
+vPC status
+----------------------------------------------------------------------------
+Id    Port          Status Consistency Reason                Active vlans
+--    ------------  ------ ----------- ------                ---------------
+10    Po2           up     success     success               1,10,13,20,30      
+         
+                                                                                
+         
+
+Please check "show vpc consistency-parameters vpc <vpc-num>" for the 
+consistency reason of down vpc and for type-2 consistency reasons for 
+any vpc.
+
+Leaf-11# sh vpc role 
+
+vPC Role status
+----------------------------------------------------
+vPC role                        : primary, operational secondary
+Dual Active Detection Status    : 0
+vPC system-mac                  : 00:23:04:ee:be:0a             
+vPC system-priority             : 32667
+vPC local system-mac            : 50:03:00:00:1b:08             
+vPC local role-priority         : 5   
+vPC local config role-priority  : 5   
+vPC peer system-mac             : 50:04:00:00:1b:08             
+vPC peer role-priority          : 10  
+vPC peer config role-priority   : 10  
+Leaf-11# 
+Leaf-11# 
+Leaf-11# 
+Leaf-11# 
+Leaf-11# sh run bgp 
+
+!Command: show running-config bgp
+!Running configuration last done at: Mon Jul 31 21:19:22 2023
+!Time: Tue Aug  1 00:19:45 2023
+
+version 9.3(10) Bios:version  
+feature bgp
+
+router bgp 65031
+  router-id 10.30.0.11
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description SPINE_UNDERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.0
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.8
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.11:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.11:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.11:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.11:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65031:13000 evpn
+
+
+Leaf-11#  
+Leaf-11# sh ip bgp summary
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.11, local AS number 65031
+BGP table version is 72, IPv4 Unicast config peers 2, capable peers 2
+14 network entries and 23 paths using 4496 bytes of memory
+BGP attribute entries [5/860], BGP AS path entries [4/36]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.0       4 65030    3627    3612       72    0    0 02:08:32 10        
+10.30.4.8       4 65030    3628    3611       72    0    0 02:08:32 10        
+Leaf-11# 
+Leaf-11# 
+Leaf-11# sh bgp l2vpn evpn 
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 151, Local Router ID is 10.30.0.11
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.11:10    (L2VNI 10000)
+*>l[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                       100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+* e                   10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.11:20    (L2VNI 20000)
+*>l[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                       100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+* e                   10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.11:30    (L2VNI 30000)
+*>l[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                       100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+* e                   10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.13:10
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:20
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                                    0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:30
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.254                                    0 65030 65033 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.254                                    0 65030 65033 ?
+
+Route Distinguisher: 10.30.1.14:10
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.14:20
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                                    0 65030 65034 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.14:30
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.14:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.254                                    0 65030 65034 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.254                                    0 65030 65034 ?
+
+Route Distinguisher: 10.30.1.11:13000    (L3VNI 13000)
+* e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+* e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.253              0        100      32768 ?
+* e                   10.30.1.254                                    0 65030 65033 ?
+* e                   10.30.1.254                                    0 65030 65034 ?
+*>l[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.253              0        100      32768 ?
+* e                   10.30.1.254                                    0 65030 65033 ?
+* e                   10.30.1.254                                    0 65030 65034 ?
+
+Leaf-11# sh bgp l2vpn evpn summary 
+BGP summary information for VRF default, address family L2VPN EVPN
+BGP router identifier 10.30.0.11, local AS number 65031
+BGP table version is 151, L2VPN EVPN config peers 2, capable peers 2
+44 network entries and 59 paths using 9416 bytes of memory
+BGP attribute entries [43/7396], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.1.1       4 65030    2122    3462      151    0    0 02:08:29 22        
+10.30.1.2       4 65030    2080    3462      151    0    0 02:08:28 0         
+
+
+Leaf-11# sh ip route hmm vrf L3VNI_Transit 
+IP Route Table for VRF "L3VNI_Transit"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.10.1/32, ubest/mbest: 1/0, attached
+    *via 10.30.10.1, Vlan10, [190/0], 00:22:08, hmm
+10.30.30.1/32, ubest/mbest: 1/0, attached
+    *via 10.30.30.1, Vlan30, [190/0], 00:21:49, hmm
+
+Leaf-11# sh fabric forwarding ip local-host-db vrf L3VNI_Transit 
+
+HMM host IPv4 routing table information for VRF L3VNI_Transit
+Status: *-valid, x-deleted, D-Duplicate, DF-Duplicate and frozen, 
+        c-cleaned in 00:03:16
+
+    Host                 MAC Address        SVI        Flags      Physical Inter
+face
+*   10.30.10.1/32        5000.0007.800a     Vlan10     0x420201   port-channel2
+*   10.30.30.1/32        5000.0007.801e     Vlan30     0x420201   port-channel2
+
+		
+#################################################################################################
+# 											Leaf-12												#
+#################################################################################################		
+
+sh run vlan
+sh run vrf FAILOVER 
+sh run vrf L3VNI_Transit
+
+
+sh run int port-channel all
+sh port-channel summary
+sh run int nve 1
+
+sh run vpc
+sh vpc brief
+sh vpc role 
+sh run bgp
+sh ip bgp summary
+
+
+Leaf-12# sh run vlan
+sh run vrf FAILOVER 
+!Command: show running-config vlan
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:29:16 2023
+
+version 9.3(10) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  name L3VNI_Transit_SVI
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-12# sh run vrf FAILOVER 
+
+!Command: show running-config vrf FAILOVER
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:29:16 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface port-channel100
+  vrf member FAILOVER
+
+vrf context FAILOVER
+
+Leaf-12# sh run vrf L3VNI_Transit
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:29:35 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.12:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65032:13000 evpn
+router bgp 65032
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+
+Leaf-12# sh run int port-channel all
+
+!Command: show running-config interface port-channel2, port-channel100, port-cha
+nnel200
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:30:43 2023
+
+version 9.3(10) Bios:version  
+
+interface port-channel2
+  description # CLIENT-1 #
+  switchport mode trunk
+  vpc 10
+
+interface port-channel100
+  description # VPC-FAILOVER-LINK #
+  no switchport
+  vrf member FAILOVER
+  ip address 1.1.1.2/30
+
+interface port-channel200
+  description # VPC-PEER-LINK #
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+
+Leaf-12# sh port-channel summary
+sh run int nve 1Flags:  D - Down        P - Up in port-channel (members)
+        I - Individual  H - Hot-standby (LACP only)
+        s - Suspended   r - Module-removed
+        b - BFD Session Wait
+        S - Switched    R - Routed
+        U - Up (port-channel)
+        p - Up in delay-lacp mode (member)
+        M - Not in use. Min-links not met
+--------------------------------------------------------------------------------
+Group Port-       Type     Protocol  Member Ports
+      Channel
+--------------------------------------------------------------------------------
+2     Po2(SU)     Eth      LACP      Eth1/7(P)    
+100   Po100(RU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)    
+200   Po200(SU)   Eth      LACP      Eth1/5(P)    Eth1/6(P)    
+Leaf-12# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:31:06 2023
+
+version 9.3(10) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+	
+	
+
+Leaf-12# sh run vpc
+sh vpc brief
+
+!Command: show running-config vpc
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:31:30 2023
+
+version 9.3(10) Bios:version  
+feature vpc
+
+vpc domain 10
+  peer-switch
+  role priority 10
+  peer-keepalive destination 1.1.1.1 source 1.1.1.2 vrf FAILOVER
+  delay restore 10
+  peer-gateway
+  ip arp synchronize
+
+interface port-channel2
+  vpc 10
+
+interface port-channel200
+  vpc peer-link
+
+Leaf-12# sh vpc brief
+Legend:
+                (*) - local vPC is down, forwarding via vPC peer-link
+
+vPC domain id                     : 10  
+Peer status                       : peer adjacency formed ok      
+vPC keep-alive status             : peer is alive                 
+Configuration consistency status  : success 
+Per-vlan consistency status       : success                       
+Type-2 consistency status         : success 
+vPC role                          : secondary, operational primary
+Number of vPCs configured         : 1   
+Peer Gateway                      : Enabled
+Dual-active excluded VLANs        : -
+Graceful Consistency Check        : Enabled
+Auto-recovery status              : Disabled
+Delay-restore status              : Timer is off.(timeout = 10s)
+Delay-restore SVI status          : Timer is off.(timeout = 10s)
+Operational Layer3 Peer-router    : Disabled
+Virtual-peerlink mode             : Disabled
+
+vPC Peer-link status
+---------------------------------------------------------------------
+id    Port   Status Active vlans    
+
+...skipping 1 line
+1     Po200  up     1,10,13,20,30                                               
+         
+
+vPC status
+----------------------------------------------------------------------------
+Id    Port          Status Consistency Reason                Active vlans
+--    ------------  ------ ----------- ------                ---------------
+10    Po2           up     success     success               1,10,13,20,30      
+
+Please check "show vpc consistency-parameters vpc <vpc-num>" for the 
+consistency reason of down vpc and for type-2 consistency reasons for 
+any vpc.
+
+Leaf-12# sh vpc role 
+
+vPC Role status
+----------------------------------------------------
+vPC role                        : secondary, operational primary
+Dual Active Detection Status    : 0
+vPC system-mac                  : 00:23:04:ee:be:0a             
+vPC system-priority             : 32667
+vPC local system-mac            : 50:04:00:00:1b:08             
+vPC local role-priority         : 10  
+vPC local config role-priority  : 10  
+vPC peer system-mac             : 50:03:00:00:1b:08             
+vPC peer role-priority          : 5   
+vPC peer config role-priority   : 5  
+
+Leaf-12# sh run bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Mon Jul 31 21:25:41 2023
+!Time: Tue Aug  1 00:32:55 2023
+
+version 9.3(10) Bios:version  
+feature bgp
+
+router bgp 65032
+  router-id 10.30.0.12
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description SPINE_UNDERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.2
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.10
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.12:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.12:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.12:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.12:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65032:13000 evpn
+
+
+Leaf-12# sh ip bgp summary 
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.12, local AS number 65032
+BGP table version is 35, IPv4 Unicast config peers 2, capable peers 2
+14 network entries and 21 paths using 4256 bytes of memory
+BGP attribute entries [5/860], BGP AS path entries [4/36]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.2       4 65030    3763    3755       35    0    0 03:07:52 9         
+10.30.4.10      4 65030    3763    3755       35    0    0 03:07:51 9         
+
+Leaf-12# 
+Leaf-12# sh bgp l2vpn evpn 
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 79, Local Router ID is 10.30.0.12
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.12:10    (L2VNI 10000)
+*>l[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                       100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+* e                   10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.12:20    (L2VNI 20000)
+*>l[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                       100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+* e                   10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.12:30    (L2VNI 30000)
+*>l[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                       100      32768 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+* e                   10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.13:10
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:20
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                                    0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:30
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65033 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65033 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65033 i
+
+Route Distinguisher: 10.30.1.13:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.254                                    0 65030 65033 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.254                                    0 65030 65033 ?
+
+Route Distinguisher: 10.30.1.14:10
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.14:20
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                                    0 65030 65034 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.14:30
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                                    0 65030 65034 i
+*>e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                                    0 65030 65034 i
+
+Route Distinguisher: 10.30.1.14:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.254                                    0 65030 65034 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.254                                    0 65030 65034 ?
+
+Route Distinguisher: 10.30.1.12:13000    (L3VNI 13000)
+* e[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+* e[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                                    0 65030 65034 i
+*>e                   10.30.1.254                                    0 65030 65033 i
+*>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.253              0        100      32768 ?
+* e                   10.30.1.254                                    0 65030 65033 ?
+* e                   10.30.1.254                                    0 65030 65034 ?
+*>l[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.253              0        100      32768 ?
+* e                   10.30.1.254                                    0 65030 65033 ?
+* e                   10.30.1.254                                    0 65030 65034 ?
+
+
+
+
+
+#################################################################################################
+# 											Leaf-13												#
+#################################################################################################
+
+sh run vlan
+sh run vrf FAILOVER 
+sh run vrf L3VNI_Transit
+
+
+sh run int port-channel all
+sh port-channel summary
+sh run int nve 1
+
+sh run vpc
+sh vpc brief
+sh vpc role 
+sh run bgp
+sh ip bgp summary
+
+sh ip route hmm vrf L3VNI_Transit 
+sh fabric forwarding ip local-host-db vrf L3VNI_Transit
+
+
+Leaf-13# sh run vlan
+sh run vrf FAILOVER 
+!Command: show running-config vlan
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:49:12 2023
+
+version 9.3(10) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  name L3VNI_Transit_SVI
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-13# sh run vrf FAILOVER 
+
+!Command: show running-config vrf FAILOVER
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:49:13 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface port-channel100
+  vrf member FAILOVER
+
+vrf context FAILOVER
+
+Leaf-13# sh run vrf L3VNI_Transit 
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:49:18 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.13:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65033:13000 evpn
+router bgp 65033
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+	  
+
+
+Leaf-13# sh run int port-channel all
+
+!Command: show running-config interface port-channel2, port-channel100, port-cha
+nnel200
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:48:18 2023
+
+version 9.3(10) Bios:version  
+
+interface port-channel2
+  description # CLIENT-1 #
+  switchport mode trunk
+  vpc 10
+
+interface port-channel100
+  description # VPC-FAILOVER-LINK #
+  no switchport
+  vrf member FAILOVER
+  ip address 1.1.1.1/30
+
+interface port-channel200
+  description # VPC-PEER-LINK #
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+Leaf-13#   sh port-channel summary
+Flags:  D - Down        P - Up in port-channel (members)
+        I - Individual  H - Hot-standby (LACP only)
+        s - Suspended   r - Module-removed
+        b - BFD Session Wait
+        S - Switched    R - Routed
+        U - Up (port-channel)
+        p - Up in delay-lacp mode (member)
+        M - Not in use. Min-links not met
+--------------------------------------------------------------------------------
+Group Port-       Type     Protocol  Member Ports
+      Channel
+--------------------------------------------------------------------------------
+2     Po2(SU)     Eth      LACP      Eth1/7(P)    
+100   Po100(RU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)    
+200   Po200(SU)   Eth      LACP      Eth1/5(P)    Eth1/6(P)    
+Leaf-13# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:48:29 2023
+
+version 9.3(10) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+
+
+
+Leaf-13# sh run vpc
+sh vpc brief
+!Command: show running-config vpc
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:44:38 2023
+
+version 9.3(10) Bios:version  
+feature vpc
+
+vpc domain 10
+  peer-switch
+  role priority 5
+  peer-keepalive destination 1.1.1.2 source 1.1.1.1 vrf FAILOVER
+  delay restore 10
+  peer-gateway
+  ip arp synchronize
+
+interface port-channel2
+  vpc 10
+
+interface port-channel200
+  vpc peer-link
+
+Leaf-13# sh vpc brief
+Legend:
+                (*) - local vPC is down, forwarding via vPC peer-link
+
+vPC domain id                     : 10  
+Peer status                       : peer adjacency formed ok      
+vPC keep-alive status             : peer is alive                 
+Configuration consistency status  : success 
+Per-vlan consistency status       : success                       
+Type-2 consistency status         : success 
+vPC role                          : primary                       
+Number of vPCs configured         : 1   
+Peer Gateway                      : Enabled
+Dual-active excluded VLANs        : -
+Graceful Consistency Check        : Enabled
+Auto-recovery status              : Disabled
+Delay-restore status              : Timer is off.(timeout = 10s)
+Delay-restore SVI status          : Timer is off.(timeout = 10s)
+Operational Layer3 Peer-router    : Disabled
+Virtual-peerlink mode             : Disabled
+
+vPC Peer-link status
+---------------------------------------------------------------------
+id    Port   Status Active vlans    
+--    ----   ------ -------------------------------------------------
+1     Po200  up     1,10,13,20,30                                               
+         
+
+vPC status
+----------------------------------------------------------------------------
+Id    Port          Status Consistency Reason                Active vlans
+--    ------------  ------ ----------- ------                ---------------
+10    Po2           up     success     success               1,10,13,20,30      
+         
+                                                                                
+         
+
+Please check "show vpc consistency-parameters vpc <vpc-num>" for the 
+consistency reason of down vpc and for type-2 consistency reasons for 
+any vpc.
+
+
+Leaf-13# sh vpc role 
+
+vPC Role status
+----------------------------------------------------
+vPC role                        : primary                       
+Dual Active Detection Status    : 0
+vPC system-mac                  : 00:23:04:ee:be:0a             
+vPC system-priority             : 32667
+vPC local system-mac            : 50:05:00:00:1b:08             
+vPC local role-priority         : 5   
+vPC local config role-priority  : 5   
+vPC peer system-mac             : 50:06:00:00:1b:08             
+vPC peer role-priority          : 10  
+vPC peer config role-priority   : 10  
+Leaf-13# sh run bgp
+
+!Command: show running-config bgp
+!Running configuration last done at: Mon Jul 31 21:21:13 2023
+!Time: Tue Aug  1 00:44:58 2023
+
+version 9.3(10) Bios:version  
+feature bgp
+
+router bgp 65033
+  router-id 10.30.0.13
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description SPINE_UNDERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.4
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.12
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.13:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.13:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.13:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.13:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65033:13000 evpn
+
+
+
+Leaf-13# sh ip bgp summary
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.13, local AS number 65033
+BGP table version is 39, IPv4 Unicast config peers 2, capable peers 2
+14 network entries and 23 paths using 4496 bytes of memory
+BGP attribute entries [5/860], BGP AS path entries [4/36]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.4       4 65030    4100    4088       39    0    0 03:24:32 10        
+10.30.4.12      4 65030    4099    4088       39    0    0 03:24:33 10    
+
+
+Leaf-13# sh bgp l2vpn evpn 
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 253, Local Router ID is 10.30.0.13
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.11:10
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:20
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                                    0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:30
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.253                                    0 65030 65031 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.253                                    0 65030 65031 ?
+
+Route Distinguisher: 10.30.1.12:10
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:20
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                                    0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:30
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.253                                    0 65030 65032 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.253                                    0 65030 65032 ?
+
+Route Distinguisher: 10.30.1.13:10    (L2VNI 10000)
+* e[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                       100      32768 i
+* e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                       100      32768 i
+
+Route Distinguisher: 10.30.1.13:20    (L2VNI 20000)
+* e[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                       100      32768 i
+* e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                       100      32768 i
+
+Route Distinguisher: 10.30.1.13:30    (L2VNI 30000)
+* e[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                       100      32768 i
+* e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                       100      32768 i
+
+Route Distinguisher: 10.30.1.13:13000    (L3VNI 13000)
+* e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+* e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.254              0        100      32768 ?
+* e                   10.30.1.253                                    0 65030 65032 ?
+* e                   10.30.1.253                                    0 65030 65031 ?
+*>l[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.254              0        100      32768 ?
+* e                   10.30.1.253                                    0 65030 65032 ?
+* e                   10.30.1.253                                    0 65030 65031 ?
+
+
+Leaf-13# sh ip route hmm vrf L3VNI_Transit 
+sh fabric forwarding ip local-host-db vrf L3VNI_TransitIP Route Table for VRF "L3VNI_Transit"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.10.2/32, ubest/mbest: 1/0, attached
+    *via 10.30.10.2, Vlan10, [190/0], 00:32:50, hmm
+10.30.30.2/32, ubest/mbest: 1/0, attached
+    *via 10.30.30.2, Vlan30, [190/0], 00:32:37, hmm
+
+Leaf-13# sh fabric forwarding ip local-host-db vrf L3VNI_Transit
+
+HMM host IPv4 routing table information for VRF L3VNI_Transit
+Status: *-valid, x-deleted, D-Duplicate, DF-Duplicate and frozen, 
+        c-cleaned in 00:02:01
+
+    Host                 MAC Address        SVI        Flags      Physical Inter
+face
+*   10.30.10.2/32        5000.0008.800a     Vlan10     0x420201   port-channel2
+*   10.30.30.2/32        5000.0008.801e     Vlan30     0x420201   port-channel2
+
+
+
+
+#################################################################################################
+# 											Leaf-14												#
+#################################################################################################
+
+sh run vlan
+sh run vrf FAILOVER 
+sh run vrf L3VNI_Transit
+
+
+sh run int port-channel all
+sh port-channel summary
+sh run int nve 1
+
+sh run vpc
+sh vpc brief
+sh vpc role 
+sh run bgp
+sh ip bgp summary
+
+sh ip route hmm vrf L3VNI_Transit 
+sh fabric forwarding ip local-host-db vrf L3VNI_Transit
+
+
+Leaf-14# sh run vlan
+sh run vrf FAILOVER 
+!Command: show running-config vlan
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:52:58 2023
+
+version 9.3(10) Bios:version  
+vlan 1,10,13,20,30
+vlan 10
+  name PROM
+  vn-segment 10000
+vlan 13
+  name L3VNI_Transit_SVI
+  vn-segment 13000
+vlan 20
+  name TEST
+  vn-segment 20000
+vlan 30
+  name PSI
+  vn-segment 30000
+
+
+Leaf-14# sh run vrf FAILOVER 
+
+!Command: show running-config vrf FAILOVER
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:52:59 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface port-channel100
+  vrf member FAILOVER
+
+vrf context FAILOVER
+
+
+Leaf-14# sh run vrf L3VNI_Transit 
+
+!Command: show running-config vrf L3VNI_Transit
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:53:03 2023
+
+version 9.3(10) Bios:version  
+ip host Spine-1 10.30.0.1
+ip host Spine-2 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host Leaf-12 10.30.0.12
+ip host Leaf-13 10.30.0.13
+ip host Leaf-14 10.30.0.14
+
+interface Vlan10
+  vrf member L3VNI_Transit
+
+interface Vlan13
+  vrf member L3VNI_Transit
+
+interface Vlan30
+  vrf member L3VNI_Transit
+
+vrf context L3VNI_Transit
+  vni 13000
+  rd 10.30.1.14:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65034:13000 evpn
+router bgp 65034
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+
+Leaf-14# sh run int port-channel all
+
+!Command: show running-config interface port-channel2, port-channel100, port-cha
+nnel200
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:54:33 2023
+
+version 9.3(10) Bios:version  
+
+interface port-channel2
+  description # CLIENT-1 #
+  switchport mode trunk
+  vpc 10
+
+interface port-channel100
+  description # VPC-FAILOVER-LINK #
+  no switchport
+  vrf member FAILOVER
+  ip address 1.1.1.2/30
+
+interface port-channel200
+  description # VPC-PEER-LINK #
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+Leaf-14# sh port-channel summary
+Flags:  D - Down        P - Up in port-channel (members)
+        I - Individual  H - Hot-standby (LACP only)
+        s - Suspended   r - Module-removed
+        b - BFD Session Wait
+        S - Switched    R - Routed
+        U - Up (port-channel)
+        p - Up in delay-lacp mode (member)
+        M - Not in use. Min-links not met
+--------------------------------------------------------------------------------
+Group Port-       Type     Protocol  Member Ports
+      Channel
+--------------------------------------------------------------------------------
+2     Po2(SU)     Eth      LACP      Eth1/7(P)    
+100   Po100(RU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)    
+200   Po200(SU)   Eth      LACP      Eth1/5(P)    Eth1/6(P)    
+Leaf-14# sh run int nve 1
+
+!Command: show running-config interface nve1
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:54:46 2023
+
+version 9.3(10) Bios:version  
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 10000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 13000 associate-vrf
+  member vni 20000
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 30000
+    suppress-arp
+    ingress-replication protocol bgp
+	
+
+Leaf-14# sh run vpc
+sh vpc brief
+sh vpc role 
+!Command: show running-config vpc
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:58:43 2023
+
+version 9.3(10) Bios:version  
+feature vpc
+
+vpc domain 10
+  peer-switch
+  role priority 10
+  peer-keepalive destination 1.1.1.1 source 1.1.1.2 vrf FAILOVER
+  delay restore 10
+  peer-gateway
+  ip arp synchronize
+
+interface port-channel2
+  vpc 10
+
+interface port-channel200
+  vpc peer-link
+
+Leaf-14# sh vpc brief
+Legend:
+                (*) - local vPC is down, forwarding via vPC peer-link
+
+vPC domain id                     : 10  
+Peer status                       : peer adjacency formed ok      
+vPC keep-alive status             : peer is alive                 
+Configuration consistency status  : success 
+Per-vlan consistency status       : success                       
+Type-2 consistency status         : success 
+vPC role                          : secondary                     
+Number of vPCs configured         : 1   
+Peer Gateway                      : Enabled
+Dual-active excluded VLANs        : -
+Graceful Consistency Check        : Enabled
+Auto-recovery status              : Disabled
+Delay-restore status              : Timer is off.(timeout = 10s)
+Delay-restore SVI status          : Timer is off.(timeout = 10s)
+Operational Layer3 Peer-router    : Disabled
+Virtual-peerlink mode             : Disabled
+
+vPC Peer-link status
+---------------------------------------------------------------------
+id    Port   Status Active vlans    
+
+...skipping 1 line
+1     Po200  up     1,10,13,20,30                                               
+         
+
+vPC status
+----------------------------------------------------------------------------
+Id    Port          Status Consistency Reason                Active vlans
+--    ------------  ------ ----------- ------                ---------------
+10    Po2           up     success     success               1,10,13,20,30      
+         
+                                                                                
+         
+
+Please check "show vpc consistency-parameters vpc <vpc-num>" for the 
+consistency reason of down vpc and for type-2 consistency reasons for 
+any vpc.
+
+Leaf-14# sh vpc role  
+
+vPC Role status
+----------------------------------------------------
+vPC role                        : secondary                     
+Dual Active Detection Status    : 0
+vPC system-mac                  : 00:23:04:ee:be:0a             
+vPC system-priority             : 32667
+vPC local system-mac            : 50:06:00:00:1b:08             
+vPC local role-priority         : 10  
+vPC local config role-priority  : 10  
+vPC peer system-mac             : 50:05:00:00:1b:08             
+vPC peer role-priority          : 5   
+vPC peer config role-priority   : 5   
+
+	
+Leaf-14# sh run bgp 
+
+!Command: show running-config bgp
+!Running configuration last done at: Mon Jul 31 21:20:49 2023
+!Time: Tue Aug  1 00:59:26 2023
+
+version 9.3(10) Bios:version  
+feature bgp
+
+router bgp 65034
+  router-id 10.30.0.14
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  address-family l2vpn evpn
+  template peer SPINE
+    bfd
+    remote-as 65030
+    description SPINE_UNDERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  template peer SPINE_OVERLAY
+    bfd
+    remote-as 65030
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 2
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-1
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-2
+  neighbor 10.30.4.6
+    inherit peer SPINE
+    description SPINE-1
+  neighbor 10.30.4.14
+    inherit peer SPINE
+    description SPINE-2
+  vrf L3VNI_Transit
+    address-family ipv4 unicast
+      redistribute direct route-map RM_EXPORT_CONNECTED
+evpn
+  vni 10000 l2
+    rd 10.30.1.14:10
+    route-target import 10000:10
+    route-target export 10000:10
+  vni 20000 l2
+    rd 10.30.1.14:20
+    route-target import 20000:20
+    route-target export 20000:20
+  vni 30000 l2
+    rd 10.30.1.14:30
+    route-target import 30000:30
+    route-target export 30000:30
+vrf context L3VNI_Transit
+  rd 10.30.1.14:13000
+  address-family ipv4 unicast
+    route-target import 65031:13000 evpn
+    route-target import 65032:13000 evpn
+    route-target import 65033:13000 evpn
+    route-target import 65034:13000 evpn
+    route-target export 65034:13000 evpn
+
+
+Leaf-14# sh ip bgp summary 
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.30.0.14, local AS number 65034
+BGP table version is 37, IPv4 Unicast config peers 2, capable peers 2
+14 network entries and 21 paths using 4256 bytes of memory
+BGP attribute entries [5/860], BGP AS path entries [4/36]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.30.4.6       4 65030    4396    4386       37    0    0 03:39:30 9         
+10.30.4.14      4 65030    4397    4387       37    0    0 03:39:32 9         
+
+
+Leaf-14# sh bgp l2vpn evpn 
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 248, Local Router ID is 10.30.0.14
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-i
+njected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - b
+est2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.30.1.11:10
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:20
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                                    0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:30
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65031 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65031 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65031 i
+
+Route Distinguisher: 10.30.1.11:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.253                                    0 65030 65031 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.253                                    0 65030 65031 ?
+
+Route Distinguisher: 10.30.1.12:10
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:20
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                                    0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:30
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+
+Route Distinguisher: 10.30.1.12:13000
+*>e[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.253                                    0 65030 65032 ?
+*>e[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.253                                    0 65030 65032 ?
+
+Route Distinguisher: 10.30.1.14:10    (L2VNI 10000)
+* e[2]:[0]:[0]:[48]:[5000.0007.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.800a]:[0]:[0.0.0.0]/216
+                      10.30.1.254                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.800a]:[32]:[10.30.10.2]/272
+                      10.30.1.254                       100      32768 i
+* e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                       100      32768 i
+
+Route Distinguisher: 10.30.1.14:20    (L2VNI 20000)
+* e[2]:[0]:[0]:[48]:[5000.0007.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.8014]:[0]:[0.0.0.0]/216
+                      10.30.1.254                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0007.8014]:[32]:[10.30.20.1]/248
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.8014]:[32]:[10.30.20.2]/248
+                      10.30.1.254                       100      32768 i
+* e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                       100      32768 i
+
+Route Distinguisher: 10.30.1.14:30    (L2VNI 30000)
+* e[2]:[0]:[0]:[48]:[5000.0007.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.801e]:[0]:[0.0.0.0]/216
+                      10.30.1.254                       100      32768 i
+* e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[2]:[0]:[0]:[48]:[5000.0008.801e]:[32]:[10.30.30.2]/272
+                      10.30.1.254                       100      32768 i
+* e[3]:[0]:[32]:[10.30.1.253]/88
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[3]:[0]:[32]:[10.30.1.254]/88
+                      10.30.1.254                       100      32768 i
+
+Route Distinguisher: 10.30.1.14:13000    (L3VNI 13000)
+* e[2]:[0]:[0]:[48]:[5000.0007.800a]:[32]:[10.30.10.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+* e[2]:[0]:[0]:[48]:[5000.0007.801e]:[32]:[10.30.30.1]/272
+                      10.30.1.253                                    0 65030 65032 i
+*>e                   10.30.1.253                                    0 65030 65031 i
+*>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                      10.30.1.254              0        100      32768 ?
+* e                   10.30.1.253                                    0 65030 65032 ?
+* e                   10.30.1.253                                    0 65030 65031 ?
+*>l[5]:[0]:[0]:[24]:[10.30.30.0]/224
+                      10.30.1.254              0        100      32768 ?
+* e                   10.30.1.253                                    0 65030 65032 ?
+* e                   10.30.1.253                                    0 65030 65031 ?
+
+
+
+Leaf-14# sh ip route hmm vrf L3VNI_Transit 
+sh fabric forwarding ip local-host-db vrf L3VNI_TransitIP Route Table for VRF "L3VNI_Transit"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.30.10.2/32, ubest/mbest: 1/0, attached
+    *via 10.30.10.2, Vlan10, [190/0], 00:46:01, hmm
+10.30.30.2/32, ubest/mbest: 1/0, attached
+    *via 10.30.30.2, Vlan30, [190/0], 00:45:49, hmm
+
+Leaf-14# sh fabric forwarding ip local-host-db vrf L3VNI_Transit
+
+HMM host IPv4 routing table information for VRF L3VNI_Transit
+Status: *-valid, x-deleted, D-Duplicate, DF-Duplicate and frozen, 
+        c-cleaned in 00:08:06
+
+    Host                 MAC Address        SVI        Flags      Physical Inter
+face
+*   10.30.10.2/32        5000.0008.800a     Vlan10     0x420201   port-channel2
+*   10.30.30.2/32        5000.0008.801e     Vlan30     0x420201   port-channel2
+
+
+
+###################################################################################################
+# 											CLIENT-1                                              #
+###################################################################################################
+
+Client-1#sh ip interface brief | ex unas
+Interface              IP-Address      OK? Method Status                Protocol
+Vlan10                 10.30.10.1      YES TFTP   up                    up      
+Vlan20                 10.30.20.1      YES TFTP   up                    up      
+Vlan30                 10.30.30.1      YES TFTP   up                    up      
+
+
+Client-1#sh etherchannel summary 
+Flags:  D - down        P - bundled in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      N - not in use, no aggregation
+        f - failed to allocate aggregator
+
+        M - not in use, minimum links not met
+        m - not in use, port not aggregated due to minimum links not met
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+
+        A - formed by Auto LAG
+
+
+Number of channel-groups in use: 1
+Number of aggregators:           1
+
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+2      Po2(SU)         LACP      Gi0/0(P)    Gi1/0(P)    
+
+Client-1#ping 10.30.10.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.30.10.2, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 13/19/44 ms
+Client-1#ping 10.30.20.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.30.20.2, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 12/21/40 ms
+Client-1#ping 10.30.30.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.30.30.2, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 10/25/75 ms
+Client-1#
+
+###################################################################################################
+# 											CLIENT-2                                              #
+###################################################################################################
+
+Client-2#sh ip interface brief | ex unas
+Interface              IP-Address      OK? Method Status                Protocol
+Vlan10                 10.30.10.2      YES TFTP   up                    up      
+Vlan20                 10.30.20.2      YES TFTP   up                    up      
+Vlan30                 10.30.30.2      YES TFTP   up                    up      
+
+
+Client-2#show etherchannel summary 
+Flags:  D - down        P - bundled in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      N - not in use, no aggregation
+        f - failed to allocate aggregator
+
+        M - not in use, minimum links not met
+        m - not in use, port not aggregated due to minimum links not met
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+
+        A - formed by Auto LAG
+
+
+Number of channel-groups in use: 1
+Number of aggregators:           1
+
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+2      Po2(SU)         LACP      Gi0/0(P)    Gi1/0(P)    
+
+
+Client-2#ping 10.30.10.1
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.30.10.1, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 15/25/38 ms
+Client-2#ping 10.30.20.1
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.30.20.1, timeout is 2 seconds:
+.!!!!
+Success rate is 80 percent (4/5), round-trip min/avg/max = 13/23/40 ms
+Client-2#
+Client-2#
+Client-2#ping 10.30.30.1
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.30.30.1, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 13/19/30 ms
+
