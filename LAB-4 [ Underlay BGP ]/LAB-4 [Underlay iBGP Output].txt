@@ -1,7 +1,7 @@
 
 
 ########################################################################
-##		  OSPF Hometask Lab-4  Underlay. iBGP   [ Internal BGP ]      ##
+##	Hometask Lab-4  Underlay. iBGP   [ Internal BGP ]             ##
 ########################################################################
 
 show run bgp
