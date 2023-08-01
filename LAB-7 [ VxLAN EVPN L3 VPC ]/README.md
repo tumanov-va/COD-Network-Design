@@ -28,8 +28,8 @@ Client3_Net PSI [L3 сервис]: 10.30.30.0/24
 
 Приложения к лабораторной работе:
 
-LAB-6 / [ VxLAN EVPN L3 Config].txt - Настройка устройств
+LAB-7 / [ VxLAN EVPN L3 VPC Config].txt - Настройка устройств
 
-LAB-6 / [ VxLAN EVPN L3 Output].txt - Результат настройки VxLAN EVPN L3
+LAB-7 / [ VxLAN EVPN L3 VPC Output].txt - Результат настройки VxLAN EVPN L3 VPC
 
-LAB-6 / Схема.png - Физическая схема
+LAB-7 / Схема.png - Физическая схема
