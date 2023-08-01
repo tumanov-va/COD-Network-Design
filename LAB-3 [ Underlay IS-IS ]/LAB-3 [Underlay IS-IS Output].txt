@@ -1,27 +1,6 @@
 #######################################################
-##		  OSPF Hometask Lab-3  Underlay. IS-IS       ##
+##		  OSPF Hometask Lab-3  Underlay. IS-IS         ##
 #######################################################
-
-настроить IS-IS в Underlay сети, для IP связанности между всеми устройствами NXOS
-
-router isis UNDERLAY
-address-family ipv4 unicast
-bfd
-!
-
-interface ethernet 1/X - Y
-isis bfd 
-no isis hello-padding always
-no ip redirects
-
-
-sh run isis
-show isis interface brief
-show isis adjacency
-show isis database
-sh ip route isis-UNDERLAY
-sh bfd neighbors 
-
 #########################
 # Spine-1 Lo: 10.30.0.1 #
 #########################
