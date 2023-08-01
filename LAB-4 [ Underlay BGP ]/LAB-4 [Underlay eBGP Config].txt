@@ -271,9 +271,6 @@ exit
 copy run start
 
 
-
-
-
 ##################################
 SPINE-1 BGP SECTION
 ##################################
@@ -369,12 +366,6 @@ address-family ipv4 unicast
 route-reflector-client
 next-hop-self all
 password BGP-SECRET
-
-#######################################
-
-
-
-
 
 #######################################
 # LEAF-11 BGP
@@ -480,20 +471,12 @@ neighbor 10.30.4.6
 inherit peer SPINE
 description SPINE-2
 
-
-
-
-
-   neighbor SPINES peer group
-   neighbor SPINES remote-as 65000
-   neighbor SPINES bfd
-   neighbor 198.18.0.0 peer group SPINES
-   neighbor 198.18.0.2 peer group SPINES
-   network 10.1.1.1/32
-
-
-
-
+neighbor SPINES peer group
+neighbor SPINES remote-as 65000
+neighbor SPINES bfd
+neighbor 198.18.0.0 peer group SPINES
+neighbor 198.18.0.2 peer group SPINES
+network 10.1.1.1/32
 
 #############
 SPINE-1
