@@ -335,13 +335,7 @@ route-reflector-client
 next-hop-self all
 password BGP-SECRET
 
-#######################################
-
-
-
-
-
-#######################################
+##############################################################################
 # LEAF-11 BGP
 
 route-map REDISTRIBUTE_CONNECTED permit 10
@@ -366,8 +360,8 @@ neighbor 10.30.4.6
 inherit peer SPINE
 description SPINE-2
 !
-!
-!
+
+# LEAF-12 BGP
 
 route-map REDISTRIBUTE_CONNECTED permit 10
 match interface loopback0
@@ -392,7 +386,7 @@ inherit peer SPINE
 description SPINE-2
 !
 !
-!
+# LEAF-13 BGP
 
 route-map REDISTRIBUTE_CONNECTED permit 10
 match interface loopback0
@@ -420,44 +414,3 @@ description SPINE-2
 !
 
 
-router bgp 54030
-template peer SPINE
-password BGP-SECRET
-
-
-#############
-SPINE-1
-#############
-router bgp 54030
-router-id 10.30.0.1
-neighbor 10.30.4.0/24
-remote-as 54030
-password BGP-SECRET
-timers 3 9
-maximum-peers 10
-address-family ipv4 unicast
-route-reflector-client
-next-hop-self all
-!
-!
-!
-
-router bgp 54030
-password BGP-SECRET
-
-#############
-SPINE-2
-#############
-router bgp 54030
-router-id 10.30.0.2
-neighbor 10.30.4.0/24
-remote-as 54030
-password BGP-SECRET
-timers 3 9
-maximum-peers 10
-address-family ipv4 unicast
-route-reflector-client
-next-hop-self all
-!
-!
-!
