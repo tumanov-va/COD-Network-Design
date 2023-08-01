@@ -163,11 +163,9 @@ shutdown
 ! 
 
 
-
-
-###########################
-			SPINE
-###########################
+###################################################################################
+			           SPINE ADD-ON
+###################################################################################
 
 #int eth1/1
 #isis authentication-type md5 level-2
@@ -235,13 +233,9 @@ address-family ipv4 unicast
 bfd
 !
 
-
-
-#######################
-
-###########################
-			LEAF
-###########################
+###################################################################################
+			           LEAF ADD-ON
+###################################################################################
 feature bfd
 !
 interface loopback0
@@ -293,32 +287,3 @@ bfd
 !
 
 
-!
-interface Ethernet1/1
-no isis bfd
-!
-interface Ethernet1/2
-no isis bfd
-!
-interface Ethernet1/3
-no isis bfd
-!
-router isis UNDERLAY
-address-family ipv4 unicast
-no bfd
-!
-!
-
-
-!
-interface Ethernet1/1
-no isis bfd
-!
-interface Ethernet1/2
-no isis bfd
-!
-router isis UNDERLAY
-address-family ipv4 unicast
-no bfd
-!
-!
