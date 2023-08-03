@@ -12,10 +12,12 @@
 Адресное пространство для построения Overlay:
 
       Loopback интерфейсы: 10.30.1.0/24 [ Lo1 ]
+      
       Client1_Net: 10.30.10.0/24
-      Client1_Vlan_Id: 10
+      Client1_Vlan_Id: 10 (VPC1,VPC3)
+      
       Client2_Net: 10.30.20.0/24
-      Client2_Vlan_Id: 20
+      Client2_Vlan_Id: 20 (VPC1,VPC3)
 
 Физическая схема
 ![Схема](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/5b6056df-74e4-4162-b7ab-7685eea96fa5)
