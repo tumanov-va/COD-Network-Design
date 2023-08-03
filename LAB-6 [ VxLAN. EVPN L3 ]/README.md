@@ -579,6 +579,8 @@
 
 ###########################################################################################################
 
+      Результат настройки VxLAN EVPN L3:
+
       Leaf-12# sh nve peers
       Interface Peer-IP                                 State LearnType Uptime   Route
       r-Mac       
