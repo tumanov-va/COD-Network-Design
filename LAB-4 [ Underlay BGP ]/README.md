@@ -491,8 +491,7 @@
       --- 10.30.0.13 ping statistics ---
       5 packets transmitted, 5 packets received, 0.00% packet loss
       round-trip min/avg/max = 6.185/12.372/21.379 ms
-      Leaf-11# 
-      Leaf-11# 
+  
       Leaf-11# ping 10.30.0.12 source 10.30.0.11
       PING 10.30.0.12 (10.30.0.12) from 10.30.0.11: 56 data bytes
       64 bytes from 10.30.0.12: icmp_seq=0 ttl=253 time=45.904 ms
