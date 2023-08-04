@@ -476,5 +476,76 @@
             route-target export 30000:30
         
         
+###########################################################################################################
 
+Результат настройки агрегированных каналов и VPC для работы в Overlay сети.
 
+        Leaf-11# sh port-channel summary
+        Flags:  D - Down        P - Up in port-channel (members)
+                I - Individual  H - Hot-standby (LACP only)
+                s - Suspended   r - Module-removed
+                b - BFD Session Wait
+                S - Switched    R - Routed
+                U - Up (port-channel)
+                p - Up in delay-lacp mode (member)
+                M - Not in use. Min-links not met
+        --------------------------------------------------------------------------------
+        Group Port-       Type     Protocol  Member Ports
+              Channel
+        --------------------------------------------------------------------------------
+        2     Po2(SU)     Eth      LACP      Eth1/7(P)    
+        100   Po100(RU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)    
+        200   Po200(SU)   Eth      LACP      Eth1/5(P)    Eth1/6(P)    
+
+        Leaf-11# sh vpc brief
+        Legend:
+                        (*) - local vPC is down, forwarding via vPC peer-link
+        
+        vPC domain id                     : 10  
+        Peer status                       : peer adjacency formed ok      
+        vPC keep-alive status             : peer is alive                 
+        Configuration consistency status  : success 
+        Per-vlan consistency status       : success                       
+        Type-2 consistency status         : success 
+        vPC role                          : primary, operational secondary
+        Number of vPCs configured         : 1   
+        Peer Gateway                      : Enabled
+        Dual-active excluded VLANs        : -
+        Graceful Consistency Check        : Enabled
+        Auto-recovery status              : Disabled
+        Delay-restore status              : Timer is off.(timeout = 10s)
+        Delay-restore SVI status          : Timer is off.(timeout = 10s)
+        Operational Layer3 Peer-router    : Disabled
+        Virtual-peerlink mode             : Disabled
+        
+        vPC Peer-link status
+        ---------------------------------------------------------------------
+        id    Port   Status Active vlans    
+        --    ----   ------ -------------------------------------------------
+        1     Po200  up     1,10,13,20,30                                               
+                 
+        
+        vPC status
+        ----------------------------------------------------------------------------
+        Id    Port          Status Consistency Reason                Active vlans
+        --    ------------  ------ ----------- ------                ---------------
+        10    Po2           up     success     success               1,10,13,20,30      
+                 
+        Please check "show vpc consistency-parameters vpc <vpc-num>" for the 
+        consistency reason of down vpc and for type-2 consistency reasons for 
+        any vpc.
+        
+        Leaf-11# sh vpc role 
+        
+        vPC Role status
+        ----------------------------------------------------
+        vPC role                        : primary, operational secondary
+        Dual Active Detection Status    : 0
+        vPC system-mac                  : 00:23:04:ee:be:0a             
+        vPC system-priority             : 32667
+        vPC local system-mac            : 50:03:00:00:1b:08             
+        vPC local role-priority         : 5   
+        vPC local config role-priority  : 5   
+        vPC peer system-mac             : 50:04:00:00:1b:08             
+        vPC peer role-priority          : 10  
+        vPC peer config role-priority   : 10  
