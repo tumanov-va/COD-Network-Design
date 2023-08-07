@@ -19,7 +19,7 @@
       Client2_Net: 10.30.20.0/24
       Client2_Vlan_Id: 20 (TEST) L2 Сервис
 
-      Client3_Net: 10.30.20.0/24
+      Client3_Net: 10.30.30.0/24
       Client3_Vlan_Id: 30 (PSI) L3 Сервис
 
 Физическая схема
