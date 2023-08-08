@@ -23,7 +23,8 @@
       Client3_Vlan_Id: 30 (PSI) L3 Сервис
 
 Физическая схема
-![Схема](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/cf5ed9a6-2819-4e4b-b1af-3a66a0fab898)
+![Схема](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/a64c54e4-2a55-4b26-a722-a08104676c1b)
+
 
 Приложения к лабораторной работе:
 
