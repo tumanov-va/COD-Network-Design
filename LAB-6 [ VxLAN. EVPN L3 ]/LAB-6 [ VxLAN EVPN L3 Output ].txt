@@ -1407,7 +1407,15 @@ PSI_CLNT-3> ping 10.30.30.2
 
 ##########################################################################################
 
-Не разобрался 
+Проверка маршрутизации трафика между клиентами
+
+PROM_CLNT-1> ping 10.30.30.1
+
+84 bytes from 10.30.30.1 icmp_seq=1 ttl=63 time=7.654 ms
+84 bytes from 10.30.30.1 icmp_seq=2 ttl=63 time=3.577 ms
+84 bytes from 10.30.30.1 icmp_seq=3 ttl=63 time=3.506 ms
+84 bytes from 10.30.30.1 icmp_seq=4 ttl=63 time=6.215 ms
+84 bytes from 10.30.30.1 icmp_seq=5 ttl=63 time=3.423 ms
 
 PROM_CLNT-1> ping 10.30.30.2
 
@@ -1425,97 +1433,84 @@ PROM_CLNT-1> ping 10.30.30.3
 84 bytes from 10.30.30.3 icmp_seq=4 ttl=62 time=35.655 ms
 84 bytes from 10.30.30.3 icmp_seq=5 ttl=62 time=15.394 ms
 
-
-PROM_CLNT-1> ping 10.30.30.1
-
-84 bytes from 10.30.30.1 icmp_seq=1 ttl=63 time=7.654 ms
-84 bytes from 10.30.30.1 icmp_seq=2 ttl=63 time=3.577 ms
-84 bytes from 10.30.30.1 icmp_seq=3 ttl=63 time=3.506 ms
-84 bytes from 10.30.30.1 icmp_seq=4 ttl=63 time=6.215 ms
-84 bytes from 10.30.30.1 icmp_seq=5 ttl=63 time=3.423 ms
-
-
 ##########################################################################################
-
-PSI_CLNT-1> ping 10.30.10.2
-
-84 bytes from 10.30.10.2 icmp_seq=1 ttl=62 time=36.909 ms
-84 bytes from 10.30.10.2 icmp_seq=2 ttl=62 time=14.865 ms
-84 bytes from 10.30.10.2 icmp_seq=3 ttl=62 time=17.191 ms
-84 bytes from 10.30.10.2 icmp_seq=4 ttl=62 time=23.310 ms
-84 bytes from 10.30.10.2 icmp_seq=5 ttl=62 time=15.860 ms
-
-PSI_CLNT-1> ping 10.30.10.3
-
-10.30.10.3 icmp_seq=1 timeout
-10.30.10.3 icmp_seq=2 timeout
-10.30.10.3 icmp_seq=3 timeout
-10.30.10.3 icmp_seq=4 timeout
-10.30.10.3 icmp_seq=5 timeout
 
 PSI_CLNT-1> ping 10.30.10.1
 
-84 bytes from 10.30.10.1 icmp_seq=1 ttl=63 time=12.840 ms
-84 bytes from 10.30.10.1 icmp_seq=2 ttl=63 time=4.101 ms
-84 bytes from 10.30.10.1 icmp_seq=3 ttl=63 time=3.074 ms
-84 bytes from 10.30.10.1 icmp_seq=4 ttl=63 time=4.133 ms
-84 bytes from 10.30.10.1 icmp_seq=5 ttl=63 time=2.822 ms
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=63 time=14.889 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=63 time=3.296 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=63 time=4.080 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=63 time=10.879 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=63 time=5.707 ms
+
+PSI_CLNT-1> ping 10.30.10.2
+
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=62 time=39.128 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=62 time=9.912 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=62 time=30.698 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=62 time=13.615 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=62 time=12.951 ms
+
+PSI_CLNT-1> ping 10.30.10.3
+
+84 bytes from 10.30.10.3 icmp_seq=1 ttl=62 time=35.182 ms
+84 bytes from 10.30.10.3 icmp_seq=2 ttl=62 time=11.247 ms
+84 bytes from 10.30.10.3 icmp_seq=3 ttl=62 time=9.801 ms
+84 bytes from 10.30.10.3 icmp_seq=4 ttl=62 time=10.490 ms
+84 bytes from 10.30.10.3 icmp_seq=5 ttl=62 time=12.193 ms
 
 
 ####
 
 PSI_CLNT-2> ping 10.30.10.1
 
-84 bytes from 10.30.10.1 icmp_seq=1 ttl=62 time=39.173 ms
-84 bytes from 10.30.10.1 icmp_seq=2 ttl=62 time=26.780 ms
-84 bytes from 10.30.10.1 icmp_seq=3 ttl=62 time=17.073 ms
-84 bytes from 10.30.10.1 icmp_seq=4 ttl=62 time=20.514 ms
-84 bytes from 10.30.10.1 icmp_seq=5 ttl=62 time=14.027 ms
-
-PSI_CLNT-2> ping 10.30.10.3
-
-10.30.10.3 icmp_seq=1 timeout
-10.30.10.3 icmp_seq=2 timeout
-10.30.10.3 icmp_seq=3 timeout
-10.30.10.3 icmp_seq=4 timeout
-10.30.10.3 icmp_seq=5 timeout
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=62 time=32.745 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=62 time=18.684 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=62 time=14.168 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=62 time=11.503 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=62 time=10.149 ms
 
 PSI_CLNT-2> ping 10.30.10.2
 
-84 bytes from 10.30.10.2 icmp_seq=1 ttl=63 time=10.233 ms
-84 bytes from 10.30.10.2 icmp_seq=2 ttl=63 time=4.531 ms
-84 bytes from 10.30.10.2 icmp_seq=3 ttl=63 time=3.628 ms
-84 bytes from 10.30.10.2 icmp_seq=4 ttl=63 time=8.582 ms
-84 bytes from 10.30.10.2 icmp_seq=5 ttl=63 time=4.773 ms
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=63 time=4.144 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=63 time=3.115 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=63 time=3.056 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=63 time=3.315 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=63 time=6.148 ms
 
+PSI_CLNT-2> ping 10.30.10.3
+
+84 bytes from 10.30.10.3 icmp_seq=1 ttl=62 time=23.496 ms
+84 bytes from 10.30.10.3 icmp_seq=2 ttl=62 time=9.583 ms
+84 bytes from 10.30.10.3 icmp_seq=3 ttl=62 time=19.875 ms
+84 bytes from 10.30.10.3 icmp_seq=4 ttl=62 time=15.248 ms
+84 bytes from 10.30.10.3 icmp_seq=5 ttl=62 time=12.084 ms
 
 ####
 
 PSI_CLNT-3> ping 10.30.10.1
 
-84 bytes from 10.30.10.1 icmp_seq=1 ttl=62 time=50.453 ms
-84 bytes from 10.30.10.1 icmp_seq=2 ttl=62 time=10.212 ms
-84 bytes from 10.30.10.1 icmp_seq=3 ttl=62 time=13.504 ms
-84 bytes from 10.30.10.1 icmp_seq=4 ttl=62 time=10.355 ms
-84 bytes from 10.30.10.1 icmp_seq=5 ttl=62 time=12.701 ms
+84 bytes from 10.30.10.1 icmp_seq=1 ttl=62 time=25.715 ms
+84 bytes from 10.30.10.1 icmp_seq=2 ttl=62 time=17.764 ms
+84 bytes from 10.30.10.1 icmp_seq=3 ttl=62 time=12.139 ms
+84 bytes from 10.30.10.1 icmp_seq=4 ttl=62 time=18.697 ms
+84 bytes from 10.30.10.1 icmp_seq=5 ttl=62 time=14.724 ms
 
 PSI_CLNT-3> ping 10.30.10.2
 
-84 bytes from 10.30.10.2 icmp_seq=1 ttl=62 time=48.839 ms
-84 bytes from 10.30.10.2 icmp_seq=2 ttl=62 time=16.918 ms
-84 bytes from 10.30.10.2 icmp_seq=3 ttl=62 time=26.427 ms
-84 bytes from 10.30.10.2 icmp_seq=4 ttl=62 time=13.712 ms
-84 bytes from 10.30.10.2 icmp_seq=5 ttl=62 time=15.751 ms
+84 bytes from 10.30.10.2 icmp_seq=1 ttl=62 time=28.608 ms
+84 bytes from 10.30.10.2 icmp_seq=2 ttl=62 time=18.559 ms
+84 bytes from 10.30.10.2 icmp_seq=3 ttl=62 time=14.881 ms
+84 bytes from 10.30.10.2 icmp_seq=4 ttl=62 time=25.265 ms
+84 bytes from 10.30.10.2 icmp_seq=5 ttl=62 time=15.657 ms
 
-PSI_CLNT-3> 
 PSI_CLNT-3> ping 10.30.10.3
 
-10.30.10.3 icmp_seq=1 timeout
-10.30.10.3 icmp_seq=2 timeout
-10.30.10.3 icmp_seq=3 timeout
-10.30.10.3 icmp_seq=4 timeout
-10.30.10.3 icmp_seq=5 timeout
-
+84 bytes from 10.30.10.3 icmp_seq=1 ttl=63 time=4.154 ms
+84 bytes from 10.30.10.3 icmp_seq=2 ttl=63 time=5.802 ms
+84 bytes from 10.30.10.3 icmp_seq=3 ttl=63 time=6.942 ms
+84 bytes from 10.30.10.3 icmp_seq=4 ttl=63 time=3.273 ms
+84 bytes from 10.30.10.3 icmp_seq=5 ttl=63 time=2.868 ms
 
 
 
