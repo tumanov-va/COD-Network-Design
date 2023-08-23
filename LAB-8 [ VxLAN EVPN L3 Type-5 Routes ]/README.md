@@ -22,10 +22,4 @@
       Customer4_Net: 10.30.40.0/24
       Customer4_Vlan_Id: 40 (DEV) L3 Сервис
 
-
-VRF	Vlan_id	VNI	L3VNI	VNI	Net_Id	AnyGW
-PROM	10	10000	1040	9910	10.30.10.0/24	10.30.10.254
-TEST	20	20000	1020	9920	10.30.20.0/24	10.30.20.254
-PSI	30	30000	1030	9930	10.30.30.0/24	10.30.30.254
-DEV	40	40000	1040	9940	10.30.40.0/24	10.30.40.254
 ![изображение](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/a91b118a-bd89-4e6a-9401-16cb58ab1026)
