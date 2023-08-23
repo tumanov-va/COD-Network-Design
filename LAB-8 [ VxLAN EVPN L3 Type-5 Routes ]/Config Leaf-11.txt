@@ -1,0 +1,249 @@
+  Leaf-11# sh running-config 
+  
+  !Command: show running-config
+  !Running configuration last done at: Wed Aug 23 21:46:13 2023
+  !Time: Thu Aug 24 01:00:29 2023
+  
+  version 10.2(3) Bios:version  
+  hostname Leaf-11
+  vdc Leaf-11 id 1
+    limit-resource vlan minimum 16 maximum 4094
+    limit-resource vrf minimum 2 maximum 4096
+    limit-resource port-channel minimum 0 maximum 511
+    limit-resource m4route-mem minimum 58 maximum 58
+    limit-resource m6route-mem minimum 8 maximum 8
+  
+  nv overlay evpn
+  feature bgp
+  feature fabric forwarding
+  feature interface-vlan
+  feature vn-segment-vlan-based
+  clock timezone MSK 3 0
+  feature nv overlay
+  
+  no password strength-check
+  username admin password 5 $5$DKIGHL$CN/zX2rIrdbJTCHNXiw1qzjn6c9D2i9UR2P8NO40uA/ 
+   role network-admin
+  ip domain-lookup
+  copp profile strict
+  hardware access-list tcam region racl 512
+  hardware access-list tcam region arp-ether 256 double-wide
+  snmp-server user admin network-admin auth md5 332CDD748FDA8FC27EEAEC2547A6497B33
+  0A priv aes-128 4976A950FAC49AD418DD935108831E653317 localizedV2key
+  rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+  rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+  rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+  rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+  rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+  
+  fabric forwarding anycast-gateway-mac 0001.0001.9999
+  vlan 1,10,40,1010,1040
+  vlan 10
+    name PROM
+    vn-segment 10000
+  vlan 40
+    name DEV
+    vn-segment 40000
+  vlan 1010
+    name L3VNI_PROM
+    vn-segment 9910
+  vlan 1040
+    name L3VNI_DEV
+    vn-segment 9940
+  
+  ip prefix-list PL_DEV_OUT seq 10 permit 10.30.40.0/24 
+  ip prefix-list PL_PROM_OUT seq 10 permit 10.30.10.0/24 
+  ip prefix-list PL_PSI_OUT seq 10 permit 10.30.30.0/24 
+  ip prefix-list PL_TEST_OUT seq 10 permit 10.30.20.0/24 
+  route-map REDISTRIBUTE_CONNECTED permit 10
+    match interface loopback0 loopback1 
+  route-map RM_DEV_CONNECTED permit 10
+    description # VRF-DEV #
+    match ip address prefix-list PL_DEV_OUT 
+  route-map RM_PROM_CONNECTED permit 10
+    match ip address prefix-list PL_PROM_OUT 
+  route-map RM_PSI_CONNECTED permit 10
+    match ip address prefix-list PL_PSI_OUT 
+  route-map RM_TEST_CONNECTED permit 10
+    match ip address prefix-list PL_TEST_OUT 
+  key chain UNDERLAY_KeyChain
+    key 1
+      key-string 7 073f007f7d3e363733
+      cryptographic-algorithm HMAC-SHA-256
+  vrf context DEV
+    vni 9940
+    rd 10.30.1.11:9940
+    address-family ipv4 unicast
+      route-target import 9999:9940
+      route-target import 9999:9940 evpn
+      route-target export 9999:9940
+      route-target export 9999:9940 evpn
+  vrf context PROM
+    vni 9910
+    rd 10.30.1.11:9910
+    address-family ipv4 unicast
+      route-target import 9999:9910
+      route-target import 9999:9910 evpn
+      route-target export 9999:9910
+      route-target export 9999:9910 evpn
+  vrf context management
+  
+  
+  interface Vlan1
+  
+  interface Vlan10
+    description # L3VNI_PROM_AGW #
+    no shutdown
+    vrf member PROM
+    no ip redirects
+    ip address 10.30.10.254/24
+    no ipv6 redirects
+    fabric forwarding mode anycast-gateway
+  
+  interface Vlan40
+    description # L3VNI_DEV_AGW #
+    no shutdown
+    vrf member DEV
+    no ip redirects
+    ip address 10.30.40.254/24
+    no ipv6 redirects
+    fabric forwarding mode anycast-gateway
+  
+  interface Vlan1010
+    description L3VNI_PROM_SVI # W/O IP ADDRESS #
+    no shutdown
+    vrf member PROM
+    no ip redirects
+    ip forward
+    no ipv6 redirects
+  
+  interface Vlan1040
+    description L3VNI_DEV_SVI # W/O IP ADDRESS #
+    no shutdown
+    vrf member DEV
+    no ip redirects
+    ip forward
+    no ipv6 redirects
+  
+  interface nve1
+    no shutdown
+    host-reachability protocol bgp
+    source-interface loopback1
+    member vni 9910 associate-vrf
+    member vni 9940 associate-vrf
+    member vni 10000
+      suppress-arp
+      ingress-replication protocol bgp
+    member vni 40000
+      suppress-arp
+      ingress-replication protocol bgp
+  
+  interface Ethernet1/1
+    description # Spine-1 # 10.30.0.1 # Port # Ethernet1/1
+    mtu 9216
+    no ip redirects
+    ip address 10.30.4.1/31
+    no shutdown
+  
+  interface Ethernet1/2
+    description # Spine-2 # 10.30.0.2 # Port # Ethernet1/2
+    mtu 9216
+    no ip redirects
+    ip address 10.30.4.9/31
+    no shutdown
+  
+  interface Ethernet1/3
+  
+  interface Ethernet1/4
+    description # Client # VRF-PROM #
+    switchport
+    switchport access vlan 10
+    no shutdown
+  
+  interface Ethernet1/5
+  
+  interface Ethernet1/6
+  
+  interface Ethernet1/7
+    description # Client # VRF-DEV #
+    switchport
+    switchport access vlan 40
+    no shutdown
+   
+  interface mgmt0
+    vrf member management
+  
+  interface loopback0
+    description Router_ID # ControlPlane_EVPN
+    ip address 10.30.0.11/32
+  
+  interface loopback1
+    description Router_ID # DataPlane_VxLAN
+    ip address 10.30.1.11/32
+  icam monitor scale
+  
+  line console
+    exec-timeout 60
+  line vty
+  boot nxos bootflash:/nxos64-cs.10.2.3.F.bin 
+  router bgp 65031
+    router-id 10.30.0.11
+    bestpath as-path multipath-relax
+    log-neighbor-changes
+    address-family ipv4 unicast
+      redistribute direct route-map REDISTRIBUTE_CONNECTED
+    address-family l2vpn evpn
+    template peer SPINE
+      remote-as 65030
+      description SPINE_UNDERLAY
+      password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+      timers 3 15
+      address-family ipv4 unicast
+    template peer SPINE_OVERLAY
+      remote-as 65030
+      description SPINE_OVERLAY
+      password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+      update-source loopback1
+      ebgp-multihop 2
+      timers 3 15
+      address-family l2vpn evpn
+        send-community
+        send-community extended
+    neighbor 10.30.1.1
+      inherit peer SPINE_OVERLAY
+      description SPINE-1
+    neighbor 10.30.1.2
+      inherit peer SPINE_OVERLAY
+      description SPINE-2
+    neighbor 10.30.4.0
+      inherit peer SPINE
+      description SPINE-1
+    neighbor 10.30.4.8
+      inherit peer SPINE
+      description SPINE-2
+    vrf DEV
+      address-family ipv4 unicast
+        advertise l2vpn evpn
+        redistribute direct route-map RM_DEV_CONNECTED
+    vrf PROM
+      address-family ipv4 unicast
+        advertise l2vpn evpn
+        redistribute direct route-map RM_PROM_CONNECTED
+  evpn
+    vni 10000 l2
+      rd 10.30.1.11:10
+      route-target import 10000:10
+      route-target export 10000:10
+    vni 20000 l2
+      rd 10.30.1.11:20
+      route-target import 20000:20
+      route-target export 20000:20
+    vni 30000 l2
+      rd 10.30.1.11:30
+      route-target import 30000:30
+      route-target export 30000:30
+    vni 40000 l2
+      rd 10.30.1.11:40
+      route-target import 40000:40
+      route-target export 40000:40
+  
