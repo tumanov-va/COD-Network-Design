@@ -1,0 +1,122 @@
+  Leaf-11# sh run vrf PROM 
+  interface Vlan10
+    vrf member PROM
+  interface Vlan1010
+    vrf member PROM
+  vrf context PROM
+    vni 9910
+    rd 10.30.1.11:9910
+    address-family ipv4 unicast
+      route-target import 9999:9910
+      route-target import 9999:9910 evpn
+      route-target import 9999:9940
+      route-target export 9999:9910
+      route-target export 9999:9910 evpn
+  router bgp 65031
+    vrf PROM
+      address-family ipv4 unicast
+        advertise l2vpn evpn
+        redistribute direct route-map RM_PROM_CONNECTED
+  
+  
+  Leaf-11# sh run vrf DEV
+  interface Vlan40
+    vrf member DEV
+  
+  interface Vlan1040
+    vrf member DEV
+  vrf context DEV
+    vni 9940
+    rd 10.30.1.11:9940
+    address-family ipv4 unicast
+      route-target import 9999:9910
+      route-target import 9999:9940
+      route-target import 9999:9940 evpn
+      route-target export 9999:9940
+      route-target export 9999:9940 evpn
+  router bgp 65031
+    vrf DEV
+      address-family ipv4 unicast
+        advertise l2vpn evpn
+        redistribute direct route-map RM_DEV_CONNECTED
+  
+  Leaf-11# sh bgp l2vpn evpn vrf PROM 
+  BGP routing table information for VRF default, address family L2VPN EVPN
+  BGP table version is 61, Local Router ID is 10.30.0.11
+  Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+  Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+  Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+  
+     Network            Next Hop            Metric     LocPrf     Weight Path
+  Route Distinguisher: 10.30.1.11:9910    (L3VNI 9910)
+  *>l[5]:[0]:[0]:[24]:[10.30.10.0]/224
+                        10.30.1.11               0        100      32768 ?
+  * e                   10.30.1.12                                     0 65030 65032 ?
+  * e                   10.30.1.13                                     0 65030 65033 ?
+  
+  Leaf-11# 
+  Leaf-11# 
+  Leaf-11# sh bgp l2vpn evpn vrf DEV
+  BGP routing table information for VRF default, address family L2VPN EVPN
+  BGP table version is 61, Local Router ID is 10.30.0.11
+  Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+  Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+  Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+  
+     Network            Next Hop            Metric     LocPrf     Weight Path
+  Route Distinguisher: 10.30.1.11:9940    (L3VNI 9940)
+  *>e[2]:[0]:[0]:[48]:[0050.7966.6813]:[32]:[10.30.40.31]/272
+                        10.30.1.13                                     0 65030 65033 i
+  *>l[5]:[0]:[0]:[24]:[10.30.40.0]/224
+                        10.30.1.11               0        100      32768 ?
+  * e                   10.30.1.12                                     0 65030 65032 ?
+  * e                   10.30.1.13                                     0 65030 65033 ?
+  
+  
+  VPCS> show
+  
+  NAME   IP/MASK              GATEWAY                             GATEWAY
+  VPCS1  10.30.10.11/24       10.30.10.254
+         fe80::250:79ff:fe66:6808/64
+  
+  VPCS> ping 10.30.40.11
+  
+  84 bytes from 10.30.40.11 icmp_seq=1 ttl=63 time=8.696 ms
+  84 bytes from 10.30.40.11 icmp_seq=2 ttl=63 time=2.812 ms
+  84 bytes from 10.30.40.11 icmp_seq=3 ttl=63 time=3.222 ms
+  84 bytes from 10.30.40.11 icmp_seq=4 ttl=63 time=3.003 ms
+  84 bytes from 10.30.40.11 icmp_seq=5 ttl=63 time=2.877 ms
+  
+  VPCS> ping 10.30.40.254
+  
+  84 bytes from 10.30.40.254 icmp_seq=1 ttl=255 time=7.922 ms
+  84 bytes from 10.30.40.254 icmp_seq=2 ttl=255 time=1.760 ms
+  84 bytes from 10.30.40.254 icmp_seq=3 ttl=255 time=1.850 ms
+  84 bytes from 10.30.40.254 icmp_seq=4 ttl=255 time=4.220 ms
+  84 bytes from 10.30.40.254 icmp_seq=5 ttl=255 time=5.143 ms
+  
+  VPCS> 
+  VPCS> show
+  
+  NAME   IP/MASK              GATEWAY                             GATEWAY
+  VPCS1  10.30.40.11/24       10.30.40.254
+         fe80::250:79ff:fe66:680b/64
+  
+  VPCS> 
+  VPCS> ping 10.30.10.11
+  
+  84 bytes from 10.30.10.11 icmp_seq=1 ttl=63 time=9.866 ms
+  84 bytes from 10.30.10.11 icmp_seq=2 ttl=63 time=3.252 ms
+  84 bytes from 10.30.10.11 icmp_seq=3 ttl=63 time=3.790 ms
+  84 bytes from 10.30.10.11 icmp_seq=4 ttl=63 time=2.849 ms
+  84 bytes from 10.30.10.11 icmp_seq=5 ttl=63 time=2.574 ms
+  
+  VPCS> ping 10.30.10.254
+  
+  84 bytes from 10.30.10.254 icmp_seq=1 ttl=255 time=3.157 ms
+  84 bytes from 10.30.10.254 icmp_seq=2 ttl=255 time=1.821 ms
+  84 bytes from 10.30.10.254 icmp_seq=3 ttl=255 time=1.851 ms
+  84 bytes from 10.30.10.254 icmp_seq=4 ttl=255 time=1.690 ms
+  84 bytes from 10.30.10.254 icmp_seq=5 ttl=255 time=2.242 ms
+
+
