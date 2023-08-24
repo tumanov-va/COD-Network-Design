@@ -1,3 +1,34 @@
+  
+  Border-Leaf# sh run vrf PROM 
+  
+  interface Vlan1010
+    vrf member PROM
+  vrf context PROM
+    vni 9910
+    ip route 0.0.0.0/0 Null0
+    rd 10.30.1.14:9910
+    address-family ipv4 unicast
+      route-target import 65000:65000
+      route-target import 65000:65000 evpn
+      route-target import 9999:9910
+      route-target import 9999:9910 evpn
+      route-target import 9999:9940
+      route-target import 9999:9940 evpn
+      route-target export 65000:65000
+      route-target export 65000:65000 evpn
+      route-target export 9999:9910
+      route-target export 9999:9910 evpn
+  router bgp 65034
+    vrf PROM
+      address-family ipv4 unicast
+        network 0.0.0.0/0
+        advertise l2vpn evpn
+        redistribute static route-map COMMON_OUT
+  
+  route-map COMMON_OUT permit 10
+    match ip address prefix-list COMMON_OUT
+  ip prefix-list COMMON_OUT seq 10 permit 0.0.0.0/0
+
 
   Leaf-11# sh bgp l2vpn evpn vrf PROM 
   BGP routing table information for VRF default, address family L2VPN EVPN
