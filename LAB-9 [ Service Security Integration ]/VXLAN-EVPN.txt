@@ -1,0 +1,367 @@
+
+
+failover
+failover lan unit primary
+failover lan interface FAILOVER Ethernet1
+failover link STATEFULL Ethernet2
+failover interface ip FAILOVER 192.168.1.1 255.255.255.252 standby 192.168.1.2
+failover interface ip STATEFULL 192.168.2.1 255.255.255.252 standby 192.168.2.2
+
+###################
+
+failover
+failover lan unit secondary
+failover lan interface FAILOVER Ethernet1
+failover link STATEFULL Ethernet2
+failover interface ip FAILOVER 192.168.1.1 255.255.255.252 standby 192.168.1.2
+failover interface ip STATEFULL 192.168.2.1 255.255.255.252 standby 192.168.2.2
+
+
+###############################
+###############################
+
+POD-1
+
+LEAF-11
+
+vlan 10
+name PROM
+vn-segment 10000
+
+vlan 1010
+name L3VNI_PROM
+vn-segment 9910
+	
+ip prefix-list PL_PROM_OUT seq 10 permit 10.0.10.0/24 	
+
+route-map RM_PROM_CONNECTED permit 10
+match ip address prefix-list PL_PROM_OUT
+
+
+vrf context PROM
+vni 9910
+rd 10.30.0.11:9910
+address-family ipv4 unicast
+route-target both auto
+route-target both auto evpn
+
+interface Vlan10
+description # L3-SVI # VRF PROM # Anycast Gateway #
+no shutdown
+vrf member PROM
+no ip redirects
+ip address 10.0.10.254/24
+no ipv6 redirects
+fabric forwarding mode anycast-gateway
+
+interface Vlan1010
+description # L3VNI # VRF PROM # 
+no shutdown
+vrf member PROM
+no ip redirects
+ip forward
+no ipv6 redirects
+
+interface nve1
+no shutdown
+host-reachability protocol bgp
+source-interface loopback1
+member vni 9910 associate-vrf
+member vni 10000
+suppress-arp
+ingress-replication protocol bgp
+
+router bgp 65031
+vrf PROM
+address-family ipv4 unicast
+advertise l2vpn evpn
+redistribute direct route-map RM_PROM_CONNECTED
+
+#
+
+vlan 30
+name TEST
+vn-segment 30000
+
+vlan 2010
+name L3VNI_TEST
+vn-segment 9920
+	
+ip prefix-list PL_TEST_OUT seq 10 permit 10.0.30.0/24 	
+
+route-map RM_TEST_CONNECTED permit 10
+match ip address prefix-list PL_TEST_OUT
+
+
+vrf context TEST
+vni 9920
+rd 10.30.0.11:9920
+address-family ipv4 unicast
+route-target both auto
+route-target both auto evpn
+
+interface Vlan30
+description # L3-SVI # VRF TEST # Anycast Gateway #
+no shutdown
+vrf member TEST
+no ip redirects
+ip address 10.0.30.254/24
+no ipv6 redirects
+fabric forwarding mode anycast-gateway
+
+interface Vlan2010
+description # L3VNI # VRF TEST # 
+no shutdown
+vrf member TEST
+no ip redirects
+ip forward
+no ipv6 redirects
+
+interface nve1
+no shutdown
+host-reachability protocol bgp
+source-interface loopback1
+member vni 9920 associate-vrf
+member vni 20000
+suppress-arp
+ingress-replication protocol bgp
+
+router bgp 65031
+vrf TEST
+address-family ipv4 unicast
+advertise l2vpn evpn
+redistribute direct route-map RM_TEST_CONNECTED
+
+
+
+#################################################################
+POD-2
+
+
+LEAF-21
+
+vlan 20
+name PROM
+vn-segment 20000
+
+vlan 1010
+name L3VNI_PROM
+vn-segment 9910
+	
+ip prefix-list PL_PROM_OUT seq 10 permit 10.0.20.0/24 	
+
+route-map RM_PROM_CONNECTED permit 10
+match ip address prefix-list PL_PROM_OUT
+
+
+vrf context PROM
+vni 9910
+rd 10.30.100.11:9910
+address-family ipv4 unicast
+route-target both auto
+route-target both auto evpn
+
+interface Vlan20
+description # L3-SVI # VRF PROM # Anycast Gateway #
+no shutdown
+vrf member PROM
+no ip redirects
+ip address 10.0.20.254/24
+no ipv6 redirects
+fabric forwarding mode anycast-gateway
+
+interface Vlan1010
+description # L3VNI # VRF PROM # 
+no shutdown
+vrf member PROM
+no ip redirects
+ip forward
+no ipv6 redirects
+
+interface nve1
+no shutdown
+host-reachability protocol bgp
+source-interface loopback1
+member vni 9910 associate-vrf
+member vni 20000
+suppress-arp
+ingress-replication protocol bgp
+
+router bgp 65032
+vrf PROM
+address-family ipv4 unicast
+advertise l2vpn evpn
+redistribute direct route-map RM_PROM_CONNECTED
+
+#
+
+vlan 40
+name TEST
+vn-segment 40000
+
+vlan 2010
+name L3VNI_TEST
+vn-segment 9920
+	
+ip prefix-list PL_TEST_OUT seq 10 permit 10.0.40.0/24 	
+
+route-map RM_TEST_CONNECTED permit 10
+match ip address prefix-list PL_TEST_OUT
+
+
+vrf context TEST
+vni 9920
+rd 10.30.0.11:9920
+address-family ipv4 unicast
+route-target both auto
+route-target both auto evpn
+
+interface Vlan40
+description # L3-SVI # VRF TEST # Anycast Gateway #
+no shutdown
+vrf member TEST
+no ip redirects
+ip address 10.1.40.254/24
+no ipv6 redirects
+fabric forwarding mode anycast-gateway
+
+interface Vlan2010
+description # L3VNI # VRF TEST # 
+no shutdown
+vrf member TEST
+no ip redirects
+ip forward
+no ipv6 redirects
+
+interface nve1
+no shutdown
+host-reachability protocol bgp
+source-interface loopback1
+member vni 9920 associate-vrf
+member vni 20000
+suppress-arp
+ingress-replication protocol bgp
+
+router bgp 65032
+vrf TEST
+address-family ipv4 unicast
+advertise l2vpn evpn
+redistribute direct route-map RM_TEST_CONNECTED
+
+
+####################################################
+SPINE-11
+
+router bgp 65031
+  router-id 10.30.0.1
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+    maximum-paths ibgp 64
+  address-family l2vpn evpn
+    retain route-target all
+  template peer OVERLAY
+    description LEAF_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 10
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-map NH-Unchanged out
+  template peer POD1_LEAF
+    remote-as 65031
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+      route-reflector-client
+      next-hop-self all
+  template peer SuperSpine
+    remote-as 65030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  neighbor 10.30.4.255
+    inherit peer SuperSpine
+    description SuperSpine
+  neighbor 10.30.101.1
+    inherit peer OVERLAY
+    remote-as 65032
+    description OVERLAY POD2-SPINE21
+  neighbor 10.30.101.2
+    inherit peer OVERLAY
+    remote-as 65032
+    description OVERLAY POD2-SPINE22
+  neighbor 10.30.1.0/24
+    inherit peer OVERLAY
+    remote-as 65031
+    description OVERLAY POD1-LEAFS
+  neighbor 10.30.4.0/24
+    inherit peer POD1_LEAF
+    description POD1 LEAFS
+
+
+LEAF-11
+
+	
+router bgp 65031
+  router-id 10.30.0.11
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+    maximum-paths ibgp 64
+  template peer SPINE
+    remote-as 65031
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+      next-hop-self all
+  template peer SPINE_OVERLAY
+    remote-as 65031
+    description SPINE_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      rewrite-evpn-rt-asn
+  neighbor 10.30.1.1
+    inherit peer SPINE_OVERLAY
+    description SPINE-11
+  neighbor 10.30.1.2
+    inherit peer SPINE_OVERLAY
+    description SPINE-12
+  neighbor 10.30.4.0
+    inherit peer SPINE
+    description SPINE-11
+  neighbor 10.30.4.4
+    inherit peer SPINE
+    description SPINE-12
+  vrf PROM
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map RM_PROM_CONNECTED
+  vrf TEST
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map RM_TEST_CONNECTED
+vrf context PROM
+  rd 10.30.0.11:9910
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+vrf context TEST
+  rd 10.30.0.11:9920
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+
+
+
+	
+	
+	
+	
+
