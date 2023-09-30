@@ -1,0 +1,145 @@
+hostname SPINE-11
+vdc SPINE-11 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 248 maximum 248
+  limit-resource u6route-mem minimum 96 maximum 96
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature fabric forwarding
+feature interface-vlan
+feature vn-segment-vlan-based
+feature lldp
+clock timezone MSK 3 0
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$OEKLKK$hypNPbZUKo6KxiNXIicBPYL/P3pFbXVwj7mBXgRwdk.  role network-admin
+no ip domain-lookup
+ip host Spine-11 10.30.0.1
+ip host Spine-12 10.30.0.2
+ip host Leaf-11 10.30.0.11
+ip host BL-11 10.30.0.10
+ip host Super-Spine 10.30.255.255
+ip host Spine-21 10.30.100.1
+ip host Spine-22 10.30.100.2
+ip host Leaf-21 10.30.100.11
+ip host BL-21 10.30.100.10
+copp profile strict
+snmp-server user admin network-admin auth md5 017266AD4C463C8079F0D38204F0F11334D0 priv 376278BF4E156DDC0AE9C98046F3E15968D8 localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+
+route-map NH-Unchanged permit 10
+  set ip next-hop unchanged
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match interface loopback0 loopback1 
+key chain UNDERLAY_KeyChain
+  key 1
+    key-string 7 073f007f7d3e363733
+    cryptographic-algorithm HMAC-SHA-256
+vrf context management
+
+
+interface Vlan1
+
+interface Ethernet1/1
+  description # LEAF-11 # 10.30.0.11 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.0/31
+  no shutdown
+
+interface Ethernet1/2
+  description # BL-11 # 10.30.0.12 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.2/31
+  no shutdown
+
+interface Ethernet1/3
+  description # SUPER-SPINE # 10.30.255.255 # Port # Ethernet1/1
+  no switchport
+  mtu 9216
+  no ip redirects
+  ip address 10.30.4.254/31
+  no shutdown
+
+interface loopback0
+  description Router_ID # Control Plane EVPN
+  ip address 10.30.0.1/32
+
+interface loopback1
+  description Router_ID # Data Plane VxLAN
+  ip address 10.30.1.1/32
+icam monitor scale
+
+cli alias name wr copy run start
+line console
+  exec-timeout 120
+  terminal length 511
+  terminal width  511
+line vty
+boot nxos bootflash:/nxos.9.3.10.bin sup-1
+router bgp 65031
+  router-id 10.30.0.1
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+    maximum-paths ibgp 64
+  address-family l2vpn evpn
+    retain route-target all
+  template peer OVERLAY
+    description LEAF_OVERLAY
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    update-source loopback1
+    ebgp-multihop 10
+    timers 3 15
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+      route-map NH-Unchanged out
+  template peer POD1_LEAF
+    remote-as 65031
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+      route-reflector-client
+      next-hop-self all
+  template peer SuperSpine
+    remote-as 65030
+    password 3 5c0c2e6087f1e976cc0f58d4a90b33e6
+    timers 3 15
+    address-family ipv4 unicast
+  neighbor 10.30.4.255
+    inherit peer SuperSpine
+    description SuperSpine
+  neighbor 10.30.101.1
+    inherit peer OVERLAY
+    remote-as 65032
+    description OVERLAY POD2-SPINE21
+  neighbor 10.30.101.2
+    inherit peer OVERLAY
+    remote-as 65032
+    description OVERLAY POD2-SPINE22
+  neighbor 10.30.1.0/24
+    inherit peer OVERLAY
+    remote-as 65031
+    description OVERLAY POD1-LEAFS
+  neighbor 10.30.4.0/24
+    inherit peer POD1_LEAF
+    description POD1 LEAFS
+

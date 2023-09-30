@@ -1,0 +1,106 @@
+FW-ASA-PRI/pri/act # (mode multiple) #
+
+##################################      Ctx_SYSTEM:      ########################################
+
+hostname FW-ASA-PRI
+!
+interface Ethernet0
+!
+interface Ethernet0.100
+ description # VRF-PROM # INSIDE
+ vlan 100
+!
+interface Ethernet0.101
+ description # VRF-PROM # OUTSIDE
+ vlan 101
+!
+interface Ethernet0.200
+ description # VRF-TEST # INSIDE
+ vlan 200
+!
+interface Ethernet0.201
+ description # VRF-TEST # OUTSIDE
+ vlan 201
+!
+interface Ethernet1
+ description LAN Failover Interface
+!
+interface Ethernet2
+ description STATE Failover Interface
+!
+
+failover
+failover lan unit primary
+failover lan interface FAILOVER Ethernet1
+failover link STATEFULL Ethernet2
+failover interface ip FAILOVER 192.168.1.1 255.255.255.252 standby 192.168.1.2
+failover interface ip STATEFULL 192.168.2.1 255.255.255.252 standby 192.168.2.2
+0
+
+admin-context admin
+context admin
+  config-url disk0:/admin.cfg
+!
+
+context PROM
+  allocate-interface Ethernet0.100 inside 
+  allocate-interface Ethernet0.101 outside 
+  config-url disk0:/ctx-PROM.cfg
+!
+
+context TEST
+  allocate-interface Ethernet0.200 inside 
+  allocate-interface Ethernet0.201 outside 
+  config-url disk0:/ctx-TEST.cfg
+!
+
+##################################      Ctx_PROM:      ########################################
+
+hostname PROM
+!
+interface inside
+ nameif inside
+ security-level 100
+ ip address 10.0.0.2 255.255.255.248 standby 10.0.0.3 
+!
+interface outside
+ nameif outside
+ security-level 0
+ ip address 10.0.0.10 255.255.255.248 standby 10.0.0.11 
+!
+access-list VRF_TEST_to_VRF_PROM extended permit ip 10.1.40.0 255.255.255.0 10.0.10.0 255.255.255.0 
+access-list VRF_TEST_to_VRF_PROM extended permit ip 10.1.30.0 255.255.255.0 10.0.20.0 255.255.255.0 
+!
+access-group VRF_TEST_to_VRF_PROM in interface outside
+route outside 0.0.0.0 0.0.0.0 10.0.0.9 1 
+route inside 10.0.10.0 255.255.255.0 10.0.0.1 1 
+route inside 10.0.20.0 255.255.255.0 10.0.0.1 1 
+policy-map global_policy
+ class inspection_default
+  inspect icmp 
+!
+
+##################################      Ctx_TEST:      ########################################
+
+hostname TEST
+!
+interface inside
+ nameif inside
+ security-level 100
+ ip address 10.1.0.2 255.255.255.248 standby 10.1.0.3 
+!
+interface outside
+ nameif outside
+ security-level 0
+ ip address 10.1.0.10 255.255.255.248 standby 10.1.0.11 
+!
+access-list VRF_PROM_to_VRF_TEST extended permit ip 10.0.10.0 255.255.255.0 10.1.40.0 255.255.255.0 
+access-list VRF_PROM_to_VRF_TEST extended permit ip 10.0.20.0 255.255.255.0 10.1.30.0 255.255.255.0 
+access-group VRF_PROM_to_VRF_TEST in interface outside
+route outside 0.0.0.0 0.0.0.0 10.1.0.9 1 
+route inside 10.1.30.0 255.255.255.0 10.1.0.1 1 
+route inside 10.1.40.0 255.255.255.0 10.1.0.1 1 
+!
+policy-map global_policy
+ class inspection_default
+  inspect icmp 
