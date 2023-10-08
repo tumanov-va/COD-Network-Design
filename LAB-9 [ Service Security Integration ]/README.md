@@ -19,18 +19,28 @@
 
 ![Схема](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/73125bfe-2b54-4c10-a772-47ff2b507e68)
 
-Адресное пространство для построения Underlay 
 
-      Loopback интерфейсы: 10.30.0.0/24 [ Lo0 ]
-      P2P интерфейсы SPINE-LEAF: 10.30.4.0/24
+Адресное пространство для построения Underlay 
+POD-1
+     Loopback интерфейсы: 10.30.0.0/24 [ Lo0 ]
+     P2P интерфейсы SPINE-LEAF: 10.30.4.0/24
+POD-2
+     Loopback интерфейсы: 10.30.100.0/24 [ Lo0 ]
+     P2P интерфейсы SPINE-LEAF: 10.30.104.0/24     
 
 Адресное пространство для построения Overlay:
 
-      Loopback интерфейсы: 10.30.1.0/24 [ Lo1 ]
-      POD-1: 10.30.10.0/24  Vlan_Id: 10 (VRF PROM) 
-      POD-1: 10.30.30.0/24  Vlan_Id: 30 (VRF TEST) 
-      POD-2: 10.30.20.0/24  Vlan_Id: 20 (VRF PROM) 
-      POD-2: 10.30.40.0/24  Vlan_Id: 40 (VRF TEST) 
+POD-1
+     Loopback интерфейсы: 10.30.1.0/24 [ Lo0 ]
+POD-2
+     Loopback интерфейсы: 10.30.101.0/24 [ Lo0 ]
+
+Адресное пространство тенантовy:
+  
+      POD-1: 10.0.10.0/24  Vlan_Id: 10 (VRF PROM) 
+      POD-1: 10.1.30.0/24  Vlan_Id: 30 (VRF TEST) 
+      POD-2: 10.0.20.0/24  Vlan_Id: 20 (VRF PROM) 
+      POD-2: 10.1.40.0/24  Vlan_Id: 40 (VRF TEST) 
 
 
 
