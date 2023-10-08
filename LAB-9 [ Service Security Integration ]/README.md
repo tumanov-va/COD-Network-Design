@@ -43,7 +43,8 @@
       POD-2: 10.1.40.0/24  Vlan_Id: 40 (VRF TEST) 
 
 Логическая схема интеграции МСЭ
-![Логическая схема интеграции МСЭ](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/03c5c78f-36a6-4a0d-a96a-e29a16713c1c)
+![Логическая схема интеграции МСЭ](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/3578b0d1-11a3-4d20-b327-73b298065c54)
+
 
 
 
