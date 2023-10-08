@@ -16,7 +16,8 @@
         4) Для клиентов всех VRF доступно подключение во внешнюю сеть (IP: 8.8.8.8 / 5.5.5.5)
         
 Физическая схема
-![Логическая схема интеграции МСЭ](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/03c5c78f-36a6-4a0d-a96a-e29a16713c1c)
+![Схема внедрения](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/3fadd47d-9eed-49d8-8706-412302434418)
+
 
 Адресное пространство для построения Underlay 
 
@@ -41,6 +42,8 @@
       POD-2: 10.0.20.0/24  Vlan_Id: 20 (VRF PROM) 
       POD-2: 10.1.40.0/24  Vlan_Id: 40 (VRF TEST) 
 
+Логическая схема интеграции МСЭ
+![Логическая схема интеграции МСЭ](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/03c5c78f-36a6-4a0d-a96a-e29a16713c1c)
 
 
 
