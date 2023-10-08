@@ -16,9 +16,7 @@
         4) Для клиентов всех VRF доступно подключение во внешнюю сеть (IP: 8.8.8.8 / 5.5.5.5)
         
 Физическая схема
-
-![Схема](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/73125bfe-2b54-4c10-a772-47ff2b507e68)
-
+![Логическая схема интеграции МСЭ](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/03c5c78f-36a6-4a0d-a96a-e29a16713c1c)
 
 Адресное пространство для построения Underlay 
 
