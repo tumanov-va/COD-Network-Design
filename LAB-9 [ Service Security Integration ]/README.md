@@ -74,6 +74,15 @@
         https://github.com/tumanov-va/COD-Network-Design/tree/1cfa72a7dc87710d8a3612c4292c5630f4f146ab/LAB-9%20%5B%20Service%20Security%20Integration%20%5D/AUDIT
                 
 
+Разберём выполнение условий проекта на примере взаимодействия следующих устройств:
+
+Client-1 # VRF-PROM # POD-1 # IP-10.0.10.10 # MAC-1000.1000.1010
+Client-2 # VRF-TEST # POD-2 # IP-10.1.40.10 # MAC-1000.1000.4010
+
+Дополнительно проверим выполнение поставленной задачи при переключении с основной на резервную ноду МСЭ Cisco ASA (Failover).
+
+
+
 
 
 
