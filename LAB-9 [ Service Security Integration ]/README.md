@@ -160,6 +160,29 @@
         30  *  *  * 
 
 
+Техническа часть проекта (Диагностика):
+
+     LEAF-11# sh mac address-table dynamic vlan 10
+     Legend: 
+             * - primary entry, G - Gateway MAC, (R) - Routed MAC, O - Overlay MAC
+             age - seconds since last seen,+ - primary entry using vPC Peer-Link,
+             (T) - True, (F) - False, C - ControlPlane MAC, ~ - vsan
+        VLAN     MAC Address      Type      age     Secure NTFY Ports
+     ---------+-----------------+--------+---------+------+----+------------------
+     *   10     1000.1000.1010   dynamic  0         F      F    Eth1/3
+
+
+# L2FM - Layer2 Forwarding Manager:
+     LEAF-11# sh system internal l2fm event-history debugs | in 1000.1000.1010
+     2023 Oct 10 23:28:44.213690: E_DEBUG    l2fm [567]: l2fm_send_ntfn_to_am(17613): Sending old_index = 0x0, new_index = 0x1a000400 vlan: 10 mac: 1000.1000.1010 is_del: 0  
+     2023 Oct 10 23:28:43.825217: E_DEBUG    l2fm [567]: l2fm_mac_regist_add_entry(6853): Adding node to delete registration database is_reg: 1 immed_notif: 1 MAC: 1000.1000.1010, ifindex: 0x901000a, phy ifindex: 0x1a000400  
+     2023 Oct 10 21:56:30.907688: E_DEBUG    l2fm [567]: l2fm_l2rib_add_delete_local_mac_routes(2381): To L2RIB: topo-id: 10, macaddr: 1000.1000.1010, nhifindx: 0x1a000400 peer_addr 0x1a000400 
+     2023 Oct 10 21:56:30.897485: E_DEBUG    l2fm [567]: l2fm_macdb_insert(8968): temp_str = slot 0 fe 0 mac 1000.1000.1010 vlan 10 flags 0x400107 hints 0 E8 NL lc  : if_index 0x1a000400 old_if_index 0
+     2023 Oct 10 21:56:30.882918: E_DEBUG    l2fm [567]: l2fm_mcec_rmdb_delete(222): Deleting MAC 1000.1000.1010 vlan 10 from RMDB 
+
+
+     
+
 
 
         
