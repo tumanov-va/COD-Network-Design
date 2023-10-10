@@ -65,7 +65,7 @@
       ASA-OUTSIDE # VRF-TEST # Secondary node # 10.1.0.11 # MAC #  1001.000.0011
 
 
-# Полная информация о конфигурации устройств и выводе диагностических команд представлены в следующих директория проекта:
+# Полная информация о конфигурации устройств и выводе диагностических команд представлены в следующих директориях проекта:
     
         LAB-9 [ Service Security Integration ]/Configs
         https://github.com/tumanov-va/COD-Network-Design/tree/1cfa72a7dc87710d8a3612c4292c5630f4f146ab/LAB-9%20%5B%20Service%20Security%20Integration%20%5D/Configs
@@ -204,7 +204,9 @@
     2023 Oct 10 21:56:31.026214: E_DEBUG    l2rib [415]: [l2rib_obj_mac_route_create:3070] (10,1000.1000.1010,3): Route is local, isMacRemoteAtTheDelete: 0 
     2023 Oct 10 21:56:30.936114: E_DEBUG    l2rib [415]: [l2rib_client_show_route_msg:1412] Rcvd MAC ROUTE msg: (10, 1000.1000.1010), vni 0, admin_dist 0, seq 0, soo 0, 
 
-# BGP L2VPN: POD-1  
+# BGP L2VPN: 
+
+    POD-1:  
 
     LEAF-11# sh bgp l2vpn evpn vni-id 10000
     BGP routing table information for VRF default, address family L2VPN EVPN
@@ -324,7 +326,7 @@
     
       Path-id 1 not advertised to any peer
       
-# BGP L2VPN: POD-2 BL-21
+ POD-2:  Проверка на устройстве подключения резервной ноды МСЭ BL-21:
 
     BL-21# sh bgp l2vpn evpn 1000.1000.1010
     BGP routing table information for VRF default, address family L2VPN EVPN
@@ -367,6 +369,52 @@
           Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
     
       Path-id 1 not advertised to any peer
+
+ Взаимодействие клиентов, находящихся в разных VRF, происходит через МСЭ по правилу Default route
+
+    BL-11# sh ip route 10.0.10.10 vrf PROM
+    IP Route Table for VRF "PROM"
+    '*' denotes best ucast next-hop
+    '**' denotes best mcast next-hop
+    '[x/y]' denotes [preference/metric]
+    '%<string>' in via output denotes VRF <string>
+    
+    10.0.10.10/32, ubest/mbest: 1/0
+        *via 10.30.1.11%default, [200/0], 01:30:36, bgp-65031, internal, tag 65031, segid: 9910 tunnelid: 0xa1e010b encap: VXLAN
+     
+    BL-11# sh ip route 10.1.40.10 vrf PROM
+    IP Route Table for VRF "PROM"
+    '*' denotes best ucast next-hop
+    '**' denotes best mcast next-hop
+    '[x/y]' denotes [preference/metric]
+    '%<string>' in via output denotes VRF <string>
+    
+    0.0.0.0/0, ubest/mbest: 1/0
+        *via 10.0.0.2, [1/0], 01:37:31, static, tag 9910
+        
+
+     BL-11# sh ip route 10.1.40.10 vrf TEST
+     IP Route Table for VRF "TEST"
+     '*' denotes best ucast next-hop
+     '**' denotes best mcast next-hop
+     '[x/y]' denotes [preference/metric]
+     '%<string>' in via output denotes VRF <string>
+     
+     10.1.40.10/32, ubest/mbest: 1/0
+         *via 10.30.101.11%default, [200/0], 01:27:30, bgp-65031, internal, tag 65032, segid: 9920 tunnelid: 0xa1e650b encap: VXLAN
+      
+     BL-11# sh ip route 10.0.10.10 vrf TEST
+     IP Route Table for VRF "TEST"
+     '*' denotes best ucast next-hop
+     '**' denotes best mcast next-hop
+     '[x/y]' denotes [preference/metric]
+     '%<string>' in via output denotes VRF <string>
+     
+     0.0.0.0/0, ubest/mbest: 1/0
+         *via 10.1.0.2, [1/0], 01:39:23, static, tag 9920
+
+
+ 
 
 
 
