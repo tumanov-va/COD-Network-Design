@@ -76,12 +76,88 @@
 
 Разберём выполнение условий проекта на примере взаимодействия следующих устройств:
 
-Client-1 # VRF-PROM # POD-1 # IP-10.0.10.10 # MAC-1000.1000.1010
-Client-2 # VRF-TEST # POD-2 # IP-10.1.40.10 # MAC-1000.1000.4010
+     Client-1 # VRF-PROM # POD-1 # IP-10.0.10.10 # MAC-1000.1000.1010
+     Client-2 # VRF-TEST # POD-2 # IP-10.1.40.10 # MAC-1000.1000.4010
 
 Дополнительно проверим выполнение поставленной задачи при переключении с основной на резервную ноду МСЭ Cisco ASA (Failover).
 
+Обработка периметрового и межзонного трафика на основной ноде МСЭ:
 
+         FW-ASA-PRI/pri/act# sh failover state  
+         
+                        State          Last Failure Reason      Date/Time
+         This host  -   Primary
+                        Active         Ifc Failure              07:14:34 UTC Oct 10 2023
+                                       PROM inside: Failed
+                                       PROM outside: Failed
+                                       TEST inside: Failed
+                                       TEST outside: Failed
+         Other host -   Secondary
+                        Standby Ready  None
+         
+         ====Configuration State===
+                 Sync Done
+                 Sync Done - STANDBY
+         ====Communication State===
+                 Mac set
+
+
+Проверка доступов согласно поставленной задачи:
+
+    1) Для всех клиентов доступно подключение во внешнюю сеть (IP: 8.8.8.8 / 5.5.5.5)
+
+      Client1-PROM#ping 8.8.8.8   
+      Type escape sequence to abort.
+      Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+      !!!!!
+      Success rate is 100 percent (5/5), round-trip min/avg/max = 16/18/23 ms
+
+    2) Обеспечить взаимодействие IP-префиксов клиентов, принадлежащих разным тенантам (VRF) через HA пару МСЭ согласно матрице доступа.
+      
+      Client1-PROM#ping 10.1.40.10
+      Type escape sequence to abort.
+      Sending 5, 100-byte ICMP Echos to 10.1.40.10, timeout is 2 seconds:
+      !!!!!
+      Success rate is 100 percent (5/5), round-trip min/avg/max = 31/36/45 ms
+
+      Иные взаимодействия запрещены.
+      
+      Client1-PROM#ping 10.1.30.10
+      Type escape sequence to abort.
+      Sending 5, 100-byte ICMP Echos to 10.1.30.10, timeout is 2 seconds:
+      .....
+      Success rate is 0 percent (0/5)
+
+Дополнительная проверка взаимодействия клиентов различных тенантов (трафик между зонами обрабатывается правилами внедрённого сервисного устройства - МСЭ):
+
+      Client1-PROM#traceroute 10.1.40.10
+      Type escape sequence to abort.
+      Tracing the route to 10.1.40.10
+      VRF info: (vrf in name/id, vrf out name/id)
+        1 10.0.10.254 8 msec 4 msec 2 msec
+        2 10.0.0.1 20 msec 19 msec 12 msec
+        3 10.0.0.2 31 msec *  34 msec
+        4 10.0.0.12 22 msec 20 msec 18 msec
+        5 10.1.0.10 19 msec *  29 msec
+        6 10.1.0.1 24 msec 23 msec 20 msec
+        7 10.1.40.254 51 msec 43 msec 35 msec
+        8 10.1.40.10 50 msec *  40 msec
+   
+       Client1-PROM#traceroute 10.1.30.10
+       Type escape sequence to abort.
+       Tracing the route to 10.1.30.10
+       VRF info: (vrf in name/id, vrf out name/id)
+         1 10.0.10.254 8 msec 1 msec 2 msec
+         2 10.0.0.1 12 msec 9 msec 15 msec
+         3 10.0.0.2 16 msec *  18 msec
+         4 10.0.0.12 11 msec 11 msec 14 msec
+         5  *  *  * 
+         6  *  *  * 
+         7  *  *  * 
+         8  *  *  * 
+         ----------
+        29  *  *  * 
+        30  *  *  * 
 
 
 
