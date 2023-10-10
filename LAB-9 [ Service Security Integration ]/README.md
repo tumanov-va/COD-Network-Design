@@ -172,7 +172,8 @@
      *   10     1000.1000.1010   dynamic  0         F      F    Eth1/3
 
 
-# L2FM - Layer2 Forwarding Manager:
+#L2FM - Layer2 Forwarding Manager:
+
      LEAF-11# sh system internal l2fm event-history debugs | in 1000.1000.1010
      2023 Oct 10 23:28:44.213690: E_DEBUG    l2fm [567]: l2fm_send_ntfn_to_am(17613): Sending old_index = 0x0, new_index = 0x1a000400 vlan: 10 mac: 1000.1000.1010 is_del: 0  
      2023 Oct 10 23:28:43.825217: E_DEBUG    l2fm [567]: l2fm_mac_regist_add_entry(6853): Adding node to delete registration database is_reg: 1 immed_notif: 1 MAC: 1000.1000.1010, ifindex: 0x901000a, phy ifindex: 0x1a000400  
@@ -180,12 +181,69 @@
      2023 Oct 10 21:56:30.897485: E_DEBUG    l2fm [567]: l2fm_macdb_insert(8968): temp_str = slot 0 fe 0 mac 1000.1000.1010 vlan 10 flags 0x400107 hints 0 E8 NL lc  : if_index 0x1a000400 old_if_index 0
      2023 Oct 10 21:56:30.882918: E_DEBUG    l2fm [567]: l2fm_mcec_rmdb_delete(222): Deleting MAC 1000.1000.1010 vlan 10 from RMDB 
 
+#L2RIB:
 
+     LEAF-11# sh l2route evpn mac evi 10 
+     Flags -(Rmac):Router MAC (Stt):Static (L):Local (R):Remote (V):vPC link 
+     (Dup):Duplicate (Spl):Split (Rcv):Recv (AD):Auto-Delete (D):Del Pending
+     (S):Stale (C):Clear, (Ps):Peer Sync (O):Re-Originated (Nho):NH-Override
+     (Pf):Permanently-Frozen, (Orp): Orphan
      
+     Topology    Mac Address    Prod   Flags         Seq No     Next-Hops                              
+     ----------- -------------- ------ ------------- ---------- ---------------------------------------
+     10          1000.1000.1010 Local  L,            0          Eth1/3                                
+     
+    LEAF-11# sh system internal l2rib event-history mac | include 1000.1000.1010
+    2023 Oct 10 23:28:45.585308: E_DEBUG    l2rib [415]: [l2rib_obj_mac_bind_child:451] (10,1000.1000.1010): Bound MAC-IP: a0a:a:: to MAC, total MAC-IP linked count: 1 
+    2023 Oct 10 21:56:31.048354: E_DEBUG    l2rib [415]: [l2rib_show_mac_rt:2535] (10,1000.1000.1010,3): NH[0]: Eth1/3 egressVNI: 0 
+    2023 Oct 10 21:56:31.048309: E_DEBUG    l2rib [415]: [l2rib_show_mac_rt:2526] (10,1000.1000.1010,3): res: Regular ESI: (F) peerID: 0 NVE ifHandle: 1224736769 MH port-channel ifIndex: 0 nhCount: 1 encapType: 0 
+    2023 Oct 10 21:56:31.048302: E_DEBUG    l2rib [415]: [l2rib_show_mac_rt:2516] (10,1000.1000.1010,3): VNI/EVI: 10000 rtFlags: L, adminDist: 6, seqNum: 0 ecmpLabel: 0 SOO: 0(--) 
+    2023 Oct 10 21:56:31.047974: E_DEBUG    l2rib [415]: [l2rib_svr_mac_ent_gpb_encode:1124] (10,1000.1000.1010,3): Encoding MAC best route (ADD, client id 7) 
+    2023 Oct 10 21:56:31.026449: E_DEBUG    l2rib [415]: [l2rib_obj_mac_route_create:3172] (10,1000.1000.1010,3):  SOO: 0, peerID: 0, PC ifIndex: 0 
+    2023 Oct 10 21:56:31.026275: E_DEBUG    l2rib [415]: [l2rib_obj_mac_route_create:3163] (10,1000.1000.1010,3): MAC route created with seqNum: 0, flags: L, (),  
+    2023 Oct 10 21:56:31.026214: E_DEBUG    l2rib [415]: [l2rib_obj_mac_route_create:3070] (10,1000.1000.1010,3): Route is local, isMacRemoteAtTheDelete: 0 
+    2023 Oct 10 21:56:30.936114: E_DEBUG    l2rib [415]: [l2rib_client_show_route_msg:1412] Rcvd MAC ROUTE msg: (10, 1000.1000.1010), vni 0, admin_dist 0, seq 0, soo 0, 
 
+#BGP L2VPN:
 
+    LEAF-11# sh bgp l2vpn evpn vni-id 10000
+    BGP routing table information for VRF default, address family L2VPN EVPN
+    BGP table version is 69, Local Router ID is 10.30.0.11
+    Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+    Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+    Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+    
+       Network            Next Hop            Metric     LocPrf     Weight Path
+    Route Distinguisher: 10.30.0.11:32777    (L2VNI 10000)
+    *>l[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/216
+                          10.30.1.11                        100      32768 i
+    *>l[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272
+                          10.30.1.11                        100      32768 i
+    *>l[3]:[0]:[32]:[10.30.1.11]/88
+                          10.30.1.11                        100      32768 i
+                          
 
-        
+    LEAF-11# show bgp internal event-history events | in 1000.1000.1010
+    2023 Oct 10 23:28:47.003037: E_DEBUG    bgp  [772]: (default) IMP: [L2VPN EVPN] Not importing 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144 from RD 10.30.0.11:32777 to RD 10.30.0.11:32777: 
+    source and target rdinfo are same 
+    2023 Oct 10 23:28:47.002954: E_DEBUG    bgp  [772]: (default) IMP: [L2VPN EVPN] Import of 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144 (EVI: 10000) to RD 10.30.0.11:65534 (0) inhibited, not importing local paths 
+    2023 Oct 10 23:28:47.002947: E_DEBUG    bgp  [772]: (default) IMP: [L2VPN EVPN] Import of 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144 (EVI: 10000) to RD 10.30.0.11:9910 (9910) inhibited, not importing local paths 
+    2023 Oct 10 23:28:47.002930: E_DEBUG    bgp  [772]: (PROM) IMP: [IPv4 Unicast] Import of 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144 (EVI: 10000) to RD 10.30.0.11:9910 (0) inhibited, not importing local paths 
+    2023 Oct 10 23:28:47.000222: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144 is not in rib, no del 
+    2023 Oct 10 23:28:47.000150: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] For 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144, added 0 next hops, suppress 0 
+    2023 Oct 10 23:28:47.000142: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144 via 10.30.1.11 is local, no add 
+    2023 Oct 10 23:28:46.998657: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] Add/delete 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/144, flags=0x100, in_rib: no 
+    2023 Oct 10 23:28:46.283687: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] add prefix 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10] (flags 0x1) : OK, total 3 
+    2023 Oct 10 23:28:46.136493: E_DEBUG    bgp  [772]: EVT: Received from L2RIB MAC-IP route: Add ESI 0000.0000.0000.0000.0000 EVI 0/10000 mac 1000.1000.1010 ip 10.0.10.10 L3 VNI 9910 flags 0x000001 soo 0 seq 0, reorig :0 vrfid 0 
+    2023 Oct 10 21:56:31.082437: E_DEBUG    bgp  [772]: (default) IMP: [L2VPN EVPN] Not importing 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/112 from RD 10.30.0.11:32777 to RD 10.30.0.11:32777: 
+    source and target rdinfo are same 
+    2023 Oct 10 21:56:31.082372: E_DEBUG    bgp  [772]: (default) IMP: [L2VPN EVPN] Import of 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/112 (EVI: 10000) to RD 10.30.0.11:65534 (0) inhibited, not importing local paths 
+    2023 Oct 10 21:56:31.081243: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/112 is not in rib, no del 
+    2023 Oct 10 21:56:31.080684: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] For 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/112, added 0 next hops, suppress 0 
+    2023 Oct 10 21:56:31.080678: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/112 via 10.30.1.11 is local, no add 
+    2023 Oct 10 21:56:31.080290: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] Add/delete 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/112, flags=0x100, in_rib: no 
+    2023 Oct 10 21:56:31.073227: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] add prefix 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0] (flags 0x1) : OK, total 2 
+    2023 Oct 10 21:56:31.063781: E_DEBUG    bgp  [772]: EVT: Received from L2RIB MAC route: Add ESI 0000.0000.0000.0000.0000 EVI 0/10000 mac 1000.1000.1010 flags 0x000002 soo 0 seq 0 reorig: 0 
         
       
     
