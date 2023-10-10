@@ -204,7 +204,7 @@
     2023 Oct 10 21:56:31.026214: E_DEBUG    l2rib [415]: [l2rib_obj_mac_route_create:3070] (10,1000.1000.1010,3): Route is local, isMacRemoteAtTheDelete: 0 
     2023 Oct 10 21:56:30.936114: E_DEBUG    l2rib [415]: [l2rib_client_show_route_msg:1412] Rcvd MAC ROUTE msg: (10, 1000.1000.1010), vni 0, admin_dist 0, seq 0, soo 0, 
 
-#BGP L2VPN:
+# BGP L2VPN: POD-1  
 
     LEAF-11# sh bgp l2vpn evpn vni-id 10000
     BGP routing table information for VRF default, address family L2VPN EVPN
@@ -323,4 +323,50 @@
           Originator: 10.30.0.11 Cluster list: 10.30.0.1 
     
       Path-id 1 not advertised to any peer
+      
+# BGP L2VPN: POD-2 BL-21
+
+    BL-21# sh bgp l2vpn evpn 1000.1000.1010
+    BGP routing table information for VRF default, address family L2VPN EVPN
+    Route Distinguisher: 10.30.0.11:32777
+    BGP routing table entry for [2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272, version 1246
+    Paths: (2 available, best #2)
+    Flags: (0x000202) (high32 00000000) on xmit-list, is not in l2rib/evpn, is not in HW
+    
+      Path type: internal, path is valid, not best reason: Router Id, no labeled nexthop
+      AS-Path: 65031 , path sourced external to AS
+        10.30.1.11 (metric 0) from 10.30.101.2 (10.30.100.2)
+          Origin IGP, MED not set, localpref 100, weight 0
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+    
+      Advertised path-id 1
+      Path type: internal, path is valid, is best path, no labeled nexthop
+                 Imported to 2 destination(s)
+                 Imported paths list: PROM L3-9910
+      AS-Path: 65031 , path sourced external to AS
+        10.30.1.11 (metric 0) from 10.30.101.1 (10.30.100.1)
+          Origin IGP, MED not set, localpref 100, weight 0
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+    
+      Path-id 1 not advertised to any peer
+    
+    Route Distinguisher: 10.30.100.10:9910    (L3VNI 9910)
+    BGP routing table entry for [2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272, version 1245
+    Paths: (1 available, best #1)
+    Flags: (0x000202) (high32 00000000) on xmit-list, is not in l2rib/evpn, is not in HW
+    
+      Advertised path-id 1
+      Path type: internal, path is valid, is best path, no labeled nexthop
+                 Imported from 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272 
+      AS-Path: 65031 , path sourced external to AS
+        10.30.1.11 (metric 0) from 10.30.101.1 (10.30.100.1)
+          Origin IGP, MED not set, localpref 100, weight 0
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+    
+      Path-id 1 not advertised to any peer
+
+
 
