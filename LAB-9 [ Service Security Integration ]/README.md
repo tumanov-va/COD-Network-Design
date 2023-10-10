@@ -414,6 +414,164 @@
          *via 10.1.0.2, [1/0], 01:39:23, static, tag 9920
 
 
+Оригинация префикса 0.0.0.0/0 [Default Route] в POD-1 и POD-2 происходит на устройствах BL-11 и BL-21 
+методом редистрибьюции префикса из протокола статической маршрутизации в протокол динамической маршрутизации BGP.
+При этом в любой момент времени монопольным источником маршрута является активная нода МСЭ, импорт префикса префикса 0.0.0.0/0 [Default Route] происходит на основе тригера реализованного через трекинг:  
+
+      track 1 ip route 10.0.0.2/32 reachability hmm
+       vrf member PROM
+     track 2 ip route 10.1.0.2/32 reachability hmm
+       vrf member TEST
+
+Проверка перфикса 0.0.0.0/0 [Default Route] в базовом сценарии - активная нода МСЭ находится в POD-1:
+     
+     BL-11# sh track 
+     Track 1
+       IP Route 10.0.0.2/32 Reachability
+       Reachability is UP
+       1 changes, last change 02:13:03
+       VPN Routing/Forwarding table "PROM"
+       Tracked by:
+         IPv4 Static Route 1
+     
+     Track 2
+       IP Route 10.1.0.2/32 Reachability
+       Reachability is UP
+       1 changes, last change 02:13:03
+       VPN Routing/Forwarding table "TEST"
+       Tracked by:
+         IPv4 Static Route 1
+     
+     BL-11# sh ip route 0.0.0.0/0 vrf PROM
+     IP Route Table for VRF "PROM"
+     '*' denotes best ucast next-hop
+     '**' denotes best mcast next-hop
+     '[x/y]' denotes [preference/metric]
+     '%<string>' in via output denotes VRF <string>
+     
+     0.0.0.0/0, ubest/mbest: 1/0
+         *via 10.0.0.2, [1/0], 02:15:00, static, tag 9910
+     
+     BL-11# sh ip route 0.0.0.0/0 vrf TEST
+     IP Route Table for VRF "TEST"
+     '*' denotes best ucast next-hop
+     '**' denotes best mcast next-hop
+     '[x/y]' denotes [preference/metric]
+     '%<string>' in via output denotes VRF <string>
+     
+     0.0.0.0/0, ubest/mbest: 1/0
+         *via 10.1.0.2, [1/0], 02:15:07, static, tag 9920
+     
+     BL-11# sh ip bgp 0.0.0.0/0 vrf PROM 
+     BGP routing table information for VRF PROM, address family IPv4 Unicast
+     BGP routing table entry for 0.0.0.0/0, version 20
+     Paths: (1 available, best #1)
+     Flags: (0x80c0002) (high32 0x000020) on xmit-list, is not in urib, exported
+       vpn: version 38, (0x00000000100002) on xmit-list
+     
+       Advertised path-id 1, VPN AF advertised path-id 1
+       Path type: redist, path is valid, is best path, no labeled nexthop
+       AS-Path: NONE, path locally originated
+         0.0.0.0 (metric 0) from 0.0.0.0 (10.0.255.20)
+           Origin incomplete, MED 0, localpref 100, weight 32768
+           Extcommunity: RT:65030:9910
+     
+       VRF advertise information:
+       Path-id 1 not advertised to any peer
+     
+       VPN AF advertise information:
+       Path-id 1 not advertised to any peer
+     
+     BL-11# sh ip bgp 0.0.0.0/0 vrf TEST
+     BGP routing table information for VRF TEST, address family IPv4 Unicast
+     BGP routing table entry for 0.0.0.0/0, version 17
+     Paths: (1 available, best #1)
+     Flags: (0x80c0002) (high32 0x000020) on xmit-list, is not in urib, exported
+       vpn: version 39, (0x00000000100002) on xmit-list
+     
+       Advertised path-id 1, VPN AF advertised path-id 1
+       Path type: redist, path is valid, is best path, no labeled nexthop
+       AS-Path: NONE, path locally originated
+         0.0.0.0 (metric 0) from 0.0.0.0 (10.1.255.20)
+           Origin incomplete, MED 0, localpref 100, weight 32768
+           Extcommunity: RT:65030:9920
+     
+       VRF advertise information:
+       Path-id 1 not advertised to any peer
+     
+       VPN AF advertise information:
+       Path-id 1 not advertised to any peer
+
+Проверяем происхождение префикса 0.0.0.0/0 [Default Route] в POD-2
+
+    BL-21# sh ip route 0.0.0.0/0 vrf PROM
+    IP Route Table for VRF "PROM"
+    '*' denotes best ucast next-hop
+    '**' denotes best mcast next-hop
+    '[x/y]' denotes [preference/metric]
+    '%<string>' in via output denotes VRF <string>
+    
+    0.0.0.0/0, ubest/mbest: 1/0
+        *via 10.30.1.10%default, [200/0], 00:20:49, bgp-65032, internal, tag 65031, segid: 9910 tunnelid: 0xa1e010a encap: VXLAN
+     
+    BL-21# sh ip route 0.0.0.0/0 vrf TEST
+    IP Route Table for VRF "TEST"
+    '*' denotes best ucast next-hop
+    '**' denotes best mcast next-hop
+    '[x/y]' denotes [preference/metric]
+    '%<string>' in via output denotes VRF <string>
+    
+    0.0.0.0/0, ubest/mbest: 1/0
+        *via 10.30.1.10%default, [200/0], 00:21:00, bgp-65032, internal, tag 65031, segid: 9920 tunnelid: 0xa1e010a encap: VXLAN
+     
+    BL-21# sh ip bgp 0.0.0.0/0 vrf PROM
+    BGP routing table information for VRF PROM, address family IPv4 Unicast
+    BGP routing table entry for 0.0.0.0/0, version 107
+    Paths: (1 available, best #1)
+    Flags: (0x8008001a) (high32 00000000) on xmit-list, is in urib, is best urib route, is in HW
+      vpn: version 213, (0x00000000100002) on xmit-list
+    
+      Advertised path-id 1, VPN AF advertised path-id 1
+      Path type: internal, path is valid, is best path, no labeled nexthop, in rib
+                 Imported from 10.30.0.10:9910:[5]:[0]:[0]:[0]:[0.0.0.0]/224 
+      AS-Path: 65031 , path sourced external to AS
+        10.30.1.10 (metric 0) from 10.30.101.1 (10.30.100.1)
+          Origin incomplete, MED not set, localpref 100, weight 0
+          Received label 9910
+          Extcommunity: RT:65030:9910 ENCAP:8 Router MAC:5009.0000.1b08
+    
+      VRF advertise information:
+      Path-id 1 not advertised to any peer
+    
+      VPN AF advertise information:
+      Path-id 1 not advertised to any peer
+    
+    BL-21# sh ip bgp 0.0.0.0/0 vrf TEST
+    BGP routing table information for VRF TEST, address family IPv4 Unicast
+    BGP routing table entry for 0.0.0.0/0, version 88
+    Paths: (1 available, best #1)
+    Flags: (0x8008001a) (high32 00000000) on xmit-list, is in urib, is best urib route, is in HW
+      vpn: version 208, (0x00000000100002) on xmit-list
+    
+      Advertised path-id 1, VPN AF advertised path-id 1
+      Path type: internal, path is valid, is best path, no labeled nexthop, in rib
+                 Imported from 10.30.0.10:9920:[5]:[0]:[0]:[0]:[0.0.0.0]/224 
+      AS-Path: 65031 , path sourced external to AS
+        10.30.1.10 (metric 0) from 10.30.101.1 (10.30.100.1)
+          Origin incomplete, MED not set, localpref 100, weight 0
+          Received label 9920
+          Extcommunity: RT:65030:9920 ENCAP:8 Router MAC:5009.0000.1b08
+    
+      VRF advertise information:
+      Path-id 1 not advertised to any peer
+    
+      VPN AF advertise information:
+      Path-id 1 not advertised to any peer
+
+  
+    
+
+
  
 
 
