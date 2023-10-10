@@ -67,10 +67,16 @@
 
 Полная информация о конфигурации устройств и выводе диагностических команд представлены в следующих директория проекта:
     
+        LAB-9 [ Service Security Integration ]/Configs
         https://github.com/tumanov-va/COD-Network-Design/tree/1cfa72a7dc87710d8a3612c4292c5630f4f146ab/LAB-9%20%5B%20Service%20Security%20Integration%20%5D/Configs
         
+        LAB-9 [ Service Security Integration ]/AUDIT
         https://github.com/tumanov-va/COD-Network-Design/tree/1cfa72a7dc87710d8a3612c4292c5630f4f146ab/LAB-9%20%5B%20Service%20Security%20Integration%20%5D/AUDIT
                 
+
+
+
+
         
         
       
