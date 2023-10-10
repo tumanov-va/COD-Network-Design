@@ -245,9 +245,82 @@
     2023 Oct 10 21:56:31.073227: E_DEBUG    bgp  [772]: (default) RIB: [L2VPN EVPN] add prefix 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0] (flags 0x1) : OK, total 2 
     2023 Oct 10 21:56:31.063781: E_DEBUG    bgp  [772]: EVT: Received from L2RIB MAC route: Add ESI 0000.0000.0000.0000.0000 EVI 0/10000 mac 1000.1000.1010 flags 0x000002 soo 0 seq 0 reorig: 0 
         
-      
+
+    LEAF-11# sh bgp l2vpn evpn 1000.1000.1010
+    BGP routing table information for VRF default, address family L2VPN EVPN
+    Route Distinguisher: 10.30.0.11:32777    (L2VNI 10000)
+    BGP routing table entry for [2]:[0]:[0]:[48]:[1000.1000.1010]:[0]:[0.0.0.0]/216, version 7
+    Paths: (1 available, best #1)
+    Flags: (0x000102) (high32 00000000) on xmit-list, is not in l2rib/evpn
     
-
-
-
+      Advertised path-id 1
+      Path type: local, path is valid, is best path, no labeled nexthop
+      AS-Path: NONE, path locally originated
+        10.30.1.11 (metric 0) from 0.0.0.0 (10.30.0.11)
+          Origin IGP, MED not set, localpref 100, weight 32768
+          Received label 10000
+          Extcommunity: RT:65031:10000 ENCAP:8
+    
+      Path-id 1 advertised to peers:
+        10.30.1.1          10.30.1.2      
+    BGP routing table entry for [2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272, version 61
+    Paths: (1 available, best #1)
+    Flags: (0x000102) (high32 00000000) on xmit-list, is not in l2rib/evpn
+    
+      Advertised path-id 1
+      Path type: local, path is valid, is best path, no labeled nexthop
+      AS-Path: NONE, path locally originated
+        10.30.1.11 (metric 0) from 0.0.0.0 (10.30.0.11)
+          Origin IGP, MED not set, localpref 100, weight 32768
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+    
+      Path-id 1 advertised to peers:
+        10.30.1.1          10.30.1.2      
+    
+    
+    BL-11# sh bgp l2vpn evpn 1000.1000.1010
+    BGP routing table information for VRF default, address family L2VPN EVPN
+    Route Distinguisher: 10.30.0.11:32777
+    BGP routing table entry for [2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272, version 707
+    Paths: (2 available, best #1)
+    Flags: (0x000202) (high32 00000000) on xmit-list, is not in l2rib/evpn, is not in HW
+    
+      Advertised path-id 1
+      Path type: internal, path is valid, is best path, no labeled nexthop
+                 Imported to 2 destination(s)
+                 Imported paths list: PROM L3-9910
+      AS-Path: NONE, path sourced internal to AS
+        10.30.1.11 (metric 0) from 10.30.1.1 (10.30.0.1)
+          Origin IGP, MED not set, localpref 100, weight 0
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+          Originator: 10.30.0.11 Cluster list: 10.30.0.1 
+    
+      Path type: internal, path is valid, not best reason: Neighbor Address, no labeled nexthop
+      AS-Path: NONE, path sourced internal to AS
+        10.30.1.11 (metric 0) from 10.30.1.2 (10.30.0.2)
+          Origin IGP, MED not set, localpref 100, weight 0
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+          Originator: 10.30.0.11 Cluster list: 10.30.0.2 
+    
+      Path-id 1 not advertised to any peer
+    
+    Route Distinguisher: 10.30.0.10:9910    (L3VNI 9910)
+    BGP routing table entry for [2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272, version 708
+    Paths: (1 available, best #1)
+    Flags: (0x000202) (high32 00000000) on xmit-list, is not in l2rib/evpn, is not in HW
+    
+      Advertised path-id 1
+      Path type: internal, path is valid, is best path, no labeled nexthop
+                 Imported from 10.30.0.11:32777:[2]:[0]:[0]:[48]:[1000.1000.1010]:[32]:[10.0.10.10]/272 
+      AS-Path: NONE, path sourced internal to AS
+        10.30.1.11 (metric 0) from 10.30.1.1 (10.30.0.1)
+          Origin IGP, MED not set, localpref 100, weight 0
+          Received label 10000 9910
+          Extcommunity: RT:65030:9910 RT:65031:10000 ENCAP:8 Router MAC:5008.0000.1b08
+          Originator: 10.30.0.11 Cluster list: 10.30.0.1 
+    
+      Path-id 1 not advertised to any peer
 
