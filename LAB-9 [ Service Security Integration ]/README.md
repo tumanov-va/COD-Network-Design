@@ -47,20 +47,20 @@
 
 Для упрощения восприятия информации о MAC адресах клиентов и ключевых устройств параметры указаны статично:
 
-      Clilent-1 # VRF-PROM # POD-1 # IP-10.0.10.10 # MAC-1000.1000.1010
-      Clilent-1 # VRF-TEST # POD-1 # IP-10.1.30.10 # MAC-1000.1000.3010
-      Clilent-2 # VRF-PROM # POD-2 # IP-10.0.20.10 # MAC-1000.1000.2010
-      Clilent-2 # VRF-TEST # POD-2 # IP-10.1.40.10 # MAC-1000.1000.4010
+      Client-1 # VRF-PROM # POD-1 # IP-10.0.10.10 # MAC-1000.1000.1010
+      Client-1 # VRF-TEST # POD-1 # IP-10.1.30.10 # MAC-1000.1000.3010
+      Client-2 # VRF-PROM # POD-2 # IP-10.0.20.10 # MAC-1000.1000.2010
+      Client-2 # VRF-TEST # POD-2 # IP-10.1.40.10 # MAC-1000.1000.4010
       
-      ASA-INSIDE # VRF-PROM # Pri node # 10.0.0.2 # MAC #  1000.000.0002
-      ASA-INSIDE # VRF-PROM # Sec node # 10.0.0.3 # MAC #  1000.000.0003
-      ASA-OUTSIDE # VRF-PROM # Pri node # 10.0.0.10 # MAC #  1000.000.0010
-      ASA-OUTSIDE # VRF-PROM # Sec node # 10.0.0.11 # MAC #  1000.000.0011
+      ASA-INSIDE # VRF-PROM # Primary node # 10.0.0.2 # MAC #  1000.000.0002
+      ASA-INSIDE # VRF-PROM # Secondary node # 10.0.0.3 # MAC #  1000.000.0003
+      ASA-OUTSIDE # VRF-PROM # Primary node # 10.0.0.10 # MAC #  1000.000.0010
+      ASA-OUTSIDE # VRF-PROM # Secondary node # 10.0.0.11 # MAC #  1000.000.0011
       
-      ASA-INSIDE # VRF-TEST # Pri node # 10.1.0.2 # MAC #  1001.000.0002
-      ASA-INSIDE # VRF-TEST # Sec node # 10.1.0.3 # MAC #  1001.000.0003
-      ASA-OUTSIDE # VRF-TEST # Pri node # 10.1.0.10 # MAC #  1001.000.0010
-      ASA-OUTSIDE # VRF-TEST # Sec node # 10.1.0.11 # MAC #  1001.000.0011
+      ASA-INSIDE # VRF-TEST # Primary node # 10.1.0.2 # MAC #  1001.000.0002
+      ASA-INSIDE # VRF-TEST # Secondary node # 10.1.0.3 # MAC #  1001.000.0003
+      ASA-OUTSIDE # VRF-TEST # Primary node # 10.1.0.10 # MAC #  1001.000.0010
+      ASA-OUTSIDE # VRF-TEST # Secondary node # 10.1.0.11 # MAC #  1001.000.0011
 
 
 
