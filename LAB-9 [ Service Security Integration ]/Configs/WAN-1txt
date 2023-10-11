@@ -1,0 +1,160 @@
+
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname WAN-1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+!
+!
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+lldp run
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ no shutdown
+ description # INTERMET #
+ ip address 5.5.5.5 255.255.255.255
+ ip ospf 65000 area 0
+!
+interface Ethernet0/0
+ no shutdown
+ description # BL-11 # PORT # Eth1/4 # 
+ no ip address
+ duplex auto
+!
+interface Ethernet0/0.101
+ no shutdown
+ encapsulation dot1Q 101
+ ip address 10.0.0.12 255.255.255.248
+ no cdp enable
+ vrrp 101 ip 10.0.0.9
+ vrrp 101 priority 200
+!
+interface Ethernet0/0.201
+ no shutdown
+ encapsulation dot1Q 201
+ ip address 10.1.0.12 255.255.255.248
+ no cdp enable
+ vrrp 201 ip 10.1.0.9
+ vrrp 201 priority 200
+!
+interface Ethernet0/1
+ no shutdown
+ ip address 10.30.255.253 255.255.255.252
+ ip ospf network point-to-multipoint
+ ip ospf 65000 area 0
+ duplex auto
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+ shutdown
+ duplex auto
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+ duplex auto
+!
+router ospf 65000
+ router-id 10.30.255.253
+ passive-interface default
+ no passive-interface Ethernet0/1
+ default-information originate always
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 Null0
+ip route 10.0.0.0 255.255.0.0 10.0.0.10 name VRF-PROM
+ip route 10.1.0.0 255.255.0.0 10.1.0.10 name VRF-TEST
+!
+ipv6 ioam timestamp
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 1440 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end
