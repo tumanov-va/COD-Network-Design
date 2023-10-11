@@ -1,8 +1,6 @@
-FW-ASA-PRI/pri/act # (mode multiple) #
-
-##################################      Ctx_SYSTEM:      ########################################
-
 hostname FW-ASA-PRI
+enable password 8Ry2YjIyt7RRXU24 encrypted
+no mac-address auto
 !
 interface Ethernet0
 !
@@ -28,14 +26,33 @@ interface Ethernet1
 interface Ethernet2
  description STATE Failover Interface
 !
+interface Ethernet3
+ shutdown
+!
+interface Redundant1
+!
+class default
+  limit-resource All 0
+  limit-resource Mac-addresses 65535
+  limit-resource ASDM 5
+  limit-resource SSH 5
+  limit-resource Telnet 5
+!
 
+ftp mode passive
+pager lines 24
 failover
 failover lan unit primary
 failover lan interface FAILOVER Ethernet1
+failover replication http
 failover link STATEFULL Ethernet2
 failover interface ip FAILOVER 192.168.1.1 255.255.255.252 standby 192.168.1.2
 failover interface ip STATEFULL 192.168.2.1 255.255.255.252 standby 192.168.2.2
-0
+no asdm history enable
+arp timeout 14400
+no arp permit-nonconnected
+ssh stricthostkeycheck
+console timeout 0
 
 admin-context admin
 context admin
@@ -47,60 +64,24 @@ context PROM
   allocate-interface Ethernet0.101 outside 
   config-url disk0:/ctx-PROM.cfg
 !
-
+              
 context TEST
   allocate-interface Ethernet0.200 inside 
   allocate-interface Ethernet0.201 outside 
   config-url disk0:/ctx-TEST.cfg
 !
 
-##################################      Ctx_PROM:      ########################################
-
-hostname PROM
-!
-interface inside
- nameif inside
- security-level 100
- ip address 10.0.0.2 255.255.255.248 standby 10.0.0.3 
-!
-interface outside
- nameif outside
- security-level 0
- ip address 10.0.0.10 255.255.255.248 standby 10.0.0.11 
-!
-access-list VRF_TEST_to_VRF_PROM extended permit ip 10.1.40.0 255.255.255.0 10.0.10.0 255.255.255.0 
-access-list VRF_TEST_to_VRF_PROM extended permit ip 10.1.30.0 255.255.255.0 10.0.20.0 255.255.255.0 
-!
-access-group VRF_TEST_to_VRF_PROM in interface outside
-route outside 0.0.0.0 0.0.0.0 10.0.0.9 1 
-route inside 10.0.10.0 255.255.255.0 10.0.0.1 1 
-route inside 10.0.20.0 255.255.255.0 10.0.0.1 1 
-policy-map global_policy
- class inspection_default
-  inspect icmp 
-!
-
-##################################      Ctx_TEST:      ########################################
-
-hostname TEST
-!
-interface inside
- nameif inside
- security-level 100
- ip address 10.1.0.2 255.255.255.248 standby 10.1.0.3 
-!
-interface outside
- nameif outside
- security-level 0
- ip address 10.1.0.10 255.255.255.248 standby 10.1.0.11 
-!
-access-list VRF_PROM_to_VRF_TEST extended permit ip 10.0.10.0 255.255.255.0 10.1.40.0 255.255.255.0 
-access-list VRF_PROM_to_VRF_TEST extended permit ip 10.0.20.0 255.255.255.0 10.1.30.0 255.255.255.0 
-access-group VRF_PROM_to_VRF_TEST in interface outside
-route outside 0.0.0.0 0.0.0.0 10.1.0.9 1 
-route inside 10.1.30.0 255.255.255.0 10.1.0.1 1 
-route inside 10.1.40.0 255.255.255.0 10.1.0.1 1 
-!
-policy-map global_policy
- class inspection_default
-  inspect icmp 
+prompt hostname priority state context 
+no call-home reporting anonymous
+call-home
+ profile CiscoTAC-1
+  no active
+  destination address http https://tools.cisco.com/its/service/oddce/services/DDCEService
+  destination address email callhome@cisco.com
+  destination transport-method http
+  subscribe-to-alert-group diagnostic
+  subscribe-to-alert-group environment
+  subscribe-to-alert-group inventory periodic monthly
+  subscribe-to-alert-group configuration periodic monthly
+  subscribe-to-alert-group telemetry periodic daily
+crashinfo save disable
