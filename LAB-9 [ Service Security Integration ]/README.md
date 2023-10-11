@@ -74,7 +74,7 @@
       ASA-OUTSIDE # VRF-TEST # Secondary node # 10.1.0.11 # MAC #  1001.000.0011
 
 
-## Полная информация о конфигурации устройств и выводе диагностических команд представлены в следующих директориях проекта:
+## Полная информация о конфигурации устройств и выводе диагностических команд работы UNDERLAY и OVERLAY представлены в следующих директориях проекта:
     
         LAB-9 [ Service Security Integration ]/Configs
         https://github.com/tumanov-va/COD-Network-Design/tree/1cfa72a7dc87710d8a3612c4292c5630f4f146ab/LAB-9%20%5B%20Service%20Security%20Integration%20%5D/Configs
