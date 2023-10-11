@@ -1,4 +1,5 @@
 
+CTX_PROM:
 
 FW-ASA-PRI/pri/act/PROM# sh ip address 
 System IP Addresses:
@@ -14,7 +15,33 @@ outside                  outside                10.0.0.10       255.255.255.248 
 FW-ASA-PRI/pri/act/PROM# sh access-list 
 access-list cached ACL log flows: total 0, denied 0 (deny-flow-max 4096)
             alert-interval 300
-access-list VRF_TEST_to_VRF_PROM; 2 elements; name hash: 0x8e24ef1c
-access-list VRF_TEST_to_VRF_PROM line 1 extended permit ip 10.1.40.0 255.255.255.0 10.0.10.0 255.255.255.0 (hitcnt=0) 0x91d496f9 
-access-list VRF_TEST_to_VRF_PROM line 2 extended permit ip 10.1.30.0 255.255.255.0 10.0.20.0 255.255.255.0 (hitcnt=5) 0xe9b5a183 
+access-list VRF_TEST_to_VRF_PROM; 6 elements; name hash: 0x8e24ef1c
+access-list VRF_TEST_to_VRF_PROM line 1 extended permit ip 10.1.40.0 255.255.255.0 10.0.10.0 255.255.255.0 (hitcnt=12) 0x91d496f9 
+access-list VRF_TEST_to_VRF_PROM line 2 extended permit ip 10.1.30.0 255.255.255.0 10.0.20.0 255.255.255.0 (hitcnt=21) 0xe9b5a183 
+access-list VRF_TEST_to_VRF_PROM line 3 extended permit icmp any any echo-reply (hitcnt=0) 0x63c6fe39 
+access-list VRF_TEST_to_VRF_PROM line 4 extended permit icmp any any time-exceeded (hitcnt=19) 0xebe94d6a 
+access-list VRF_TEST_to_VRF_PROM line 5 extended permit icmp any any unreachable (hitcnt=0) 0xab764bc9 
+access-list VRF_TEST_to_VRF_PROM line 6 extended permit icmp any any traceroute (hitcnt=0) 0x230ca533 
 
+CTX_TEST:
+
+FW-ASA-PRI/pri/act/TEST# sh ip address 
+System IP Addresses:
+Interface                Name                   IP address      Subnet mask     Method 
+inside                   inside                 10.1.0.2        255.255.255.248 CONFIG
+outside                  outside                10.1.0.10       255.255.255.248 CONFIG
+Current IP Addresses:
+Interface                Name                   IP address      Subnet mask     Method 
+inside                   inside                 10.1.0.2        255.255.255.248 CONFIG
+outside                  outside                10.1.0.10       255.255.255.248 CONFIG
+
+FW-ASA-PRI/pri/act/TEST# sh access-list  
+access-list cached ACL log flows: total 0, denied 0 (deny-flow-max 4096)
+            alert-interval 300
+access-list VRF_PROM_to_VRF_TEST; 6 elements; name hash: 0x74a832c6
+access-list VRF_PROM_to_VRF_TEST line 1 extended permit ip 10.0.10.0 255.255.255.0 10.1.40.0 255.255.255.0 (hitcnt=22) 0xcc5d1bad 
+access-list VRF_PROM_to_VRF_TEST line 2 extended permit ip 10.0.20.0 255.255.255.0 10.1.30.0 255.255.255.0 (hitcnt=22) 0x0f3a454e 
+access-list VRF_PROM_to_VRF_TEST line 3 extended permit icmp any any echo-reply (hitcnt=0) 0x85193356 
+access-list VRF_PROM_to_VRF_TEST line 4 extended permit icmp any any time-exceeded (hitcnt=20) 0x3158bec0 
+access-list VRF_PROM_to_VRF_TEST line 5 extended permit icmp any any unreachable (hitcnt=0) 0xe55eb681 
+access-list VRF_PROM_to_VRF_TEST line 6 extended permit icmp any any traceroute (hitcnt=0) 0x35753eb6 
