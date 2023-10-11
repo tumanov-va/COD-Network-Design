@@ -27,7 +27,6 @@ VRF-Name: PROM, VRF-ID: 3, State: Up
 
 
 BL-11# sh vrf TEST detail
-
 VRF-Name: TEST, VRF-ID: 4, State: Up
     VPNID: unknown
     RD: 10.30.0.10:9920
@@ -39,7 +38,6 @@ VRF-Name: TEST, VRF-ID: 4, State: Up
 
 BL-11# sh nve interface
 Interface: nve1, State: Up, encapsulation: VXLAN
-
  VPC Capability: VPC-VIP-Only [not-notified]
  Local Router MAC: 5009.0000.1b08
  Host Learning Mode: Control-Plane
