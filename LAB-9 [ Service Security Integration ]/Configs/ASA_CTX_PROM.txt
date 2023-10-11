@@ -1,0 +1,92 @@
+FW-ASA-PRI/pri/act# more disk0:/ctx-PROM.cfg
+: Saved
+: 
+: Hardware:   ASA5520
+: Written by enable_15 at 08:16:48.578 UTC Tue Oct 10 2023
+!
+ASA Version 9.1(5)16 <context>
+!
+hostname PROM
+enable password 8Ry2YjIyt7RRXU24 encrypted
+names
+!
+interface inside
+ mac-address 1000.0000.0002 standby 1000.0000.0003
+ nameif inside
+ security-level 100
+ ip address 10.0.0.2 255.255.255.248 standby 10.0.0.3 
+!
+interface outside
+ mac-address 1000.0000.0010 standby 1000.0000.0011
+ nameif outside
+ security-level 0
+ ip address 10.0.0.10 255.255.255.248 standby 10.0.0.11 
+!
+access-list VRF_TEST_to_VRF_PROM extended permit ip 10.1.40.0 255.255.255.0 10.0.10.0 255.255.255.0 
+access-list VRF_TEST_to_VRF_PROM extended permit ip 10.1.30.0 255.255.255.0 10.0.20.0 255.255.255.0 
+access-list VRF_TEST_to_VRF_PROM extended permit icmp any any echo-reply 
+access-list VRF_TEST_to_VRF_PROM extended permit icmp any any time-exceeded 
+access-list VRF_TEST_to_VRF_PROM extended permit icmp any any unreachable 
+access-list VRF_TEST_to_VRF_PROM extended permit icmp any any traceroute 
+pager lines 24
+mtu inside 1500
+mtu outside 1500
+monitor-interface inside
+monitor-interface outside
+icmp unreachable rate-limit 1 burst-size 1
+no asdm history enable
+arp timeout 14400
+access-group VRF_TEST_to_VRF_PROM in interface outside
+route outside 0.0.0.0 0.0.0.0 10.0.0.9 1 
+route inside 10.0.10.0 255.255.255.0 10.0.0.1 1 
+route inside 10.0.20.0 255.255.255.0 10.0.0.1 1 
+timeout xlate 3:00:00
+timeout pat-xlate 0:00:30
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 icmp 0:00:02
+timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
+timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
+timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
+timeout tcp-proxy-reassembly 0:01:00
+timeout floating-conn 0:00:00
+user-identity default-domain LOCAL
+no snmp-server location
+no snmp-server contact
+crypto ipsec security-association pmtu-aging infinite
+telnet timeout 5
+ssh stricthostkeycheck
+ssh timeout 5
+ssh key-exchange group dh-group1-sha1
+no threat-detection statistics tcp-intercept
+!
+class-map inspection_default
+ match default-inspection-traffic
+!
+!
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum client auto
+  message-length maximum 512
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map 
+  inspect ftp 
+  inspect h323 h225 
+  inspect h323 ras 
+  inspect ip-options 
+  inspect netbios 
+  inspect rsh 
+  inspect rtsp 
+  inspect skinny  
+  inspect esmtp 
+  inspect sqlnet 
+  inspect sunrpc 
+  inspect tftp 
+  inspect sip  
+  inspect xdmcp 
+  inspect icmp 
+ class class-default
+  set connection decrement-ttl
+!
+service-policy global_policy global
+Cryptochecksum:2139f473c50845f7c1ddec95b634a992
+: end
