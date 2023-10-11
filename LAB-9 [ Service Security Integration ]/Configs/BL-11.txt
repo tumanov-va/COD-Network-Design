@@ -1,4 +1,4 @@
- 
+
 hostname BL-11
 vdc BL-11 id 1
   limit-resource vlan minimum 16 maximum 4094
@@ -17,6 +17,7 @@ feature vn-segment-vlan-based
 feature lldp
 clock timezone MSK 3 0
 feature nv overlay
+feature ngoam
 
 no password strength-check
 username admin password 5 $5$OEKLKK$hypNPbZUKo6KxiNXIicBPYL/P3pFbXVwj7mBXgRwdk.  role network-admin
@@ -30,6 +31,10 @@ ip host Spine-21 10.30.100.1
 ip host Spine-22 10.30.100.2
 ip host Leaf-21 10.30.100.11
 ip host BL-21 10.30.100.10
+track 1 ip route 10.0.0.2/32 reachability hmm
+  vrf member PROM
+track 2 ip route 10.1.0.2/32 reachability hmm
+  vrf member TEST
 copp profile strict
 snmp-server user admin network-admin auth md5 37521F441FA3D06D9C4C5FF9A92B7151ABB1 priv 041F0450099B963B965707BBB22200479FCF localizedV2key
 rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
@@ -39,6 +44,7 @@ rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
 rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
 
 fabric forwarding anycast-gateway-mac 0001.0001.9999
+fabric forwarding dup-host-ip-addr-detection 2 60
 vlan 1,100-101,200-201,1111,2222
 vlan 100
   name PROM_ASA-INSIDE
@@ -59,6 +65,8 @@ vlan 2222
   name L3VNI_TEST
   vn-segment 9920
 
+spanning-tree port type edge default
+spanning-tree port type edge bpduguard default
 ip prefix-list PL_DEFAULT seq 10 permit 0.0.0.0/0 
 ip prefix-list PL_PROM_OUT seq 10 permit 10.0.0.0/29 
 ip prefix-list PL_TEST_OUT seq 10 permit 10.1.0.0/29 
@@ -72,13 +80,17 @@ route-map RM_TEST_CONNECTED permit 10
   match ip address prefix-list PL_TEST_OUT PL_DEFAULT 
 route-map RM_TEST_STATIC permit 10
   match ip address prefix-list PL_DEFAULT 
+route-map TAG-PROM permit 10
+  match tag 9910 
+route-map TAG-TEST permit 10
+  match tag 9920 
 key chain UNDERLAY_KeyChain
   key 1
     key-string 7 073f007f7d3e363733
     cryptographic-algorithm HMAC-SHA-256
 vrf context PROM
   vni 9910
-  ip route 0.0.0.0/0 10.0.0.2
+  ip route 0.0.0.0/0 10.0.0.2 track 1 tag 9910
   rd 10.30.0.10:9910
   address-family ipv4 unicast
     route-target import 65030:9910
@@ -87,7 +99,7 @@ vrf context PROM
     route-target export 65030:9910 evpn
 vrf context TEST
   vni 9920
-  ip route 0.0.0.0/0 10.1.0.2
+  ip route 0.0.0.0/0 10.1.0.2 track 2 tag 9920
   rd 10.30.0.10:9920
   address-family ipv4 unicast
     route-target import 65030:9920
@@ -97,6 +109,9 @@ vrf context TEST
 vrf context management
 hardware access-list tcam region racl 512
 hardware access-list tcam region arp-ether 256 double-wide
+ngoam profile 1
+  oam-channel 2
+ngoam install acl
 
 
 interface Vlan1
@@ -106,7 +121,7 @@ interface Vlan100
   no shutdown
   vrf member PROM
   no ip redirects
-  ip address 10.0.0.1/29
+  ip address 10.0.0.1/29 tag 9910
   no ipv6 redirects
   fabric forwarding mode anycast-gateway
 
@@ -115,7 +130,7 @@ interface Vlan200
   no shutdown
   vrf member TEST
   no ip redirects
-  ip address 10.1.0.1/29
+  ip address 10.1.0.1/29 tag 9920
   no ipv6 redirects
   fabric forwarding mode anycast-gateway
 
@@ -174,12 +189,196 @@ interface Ethernet1/3
   description # FW-ASA-PRIMARY # Port # Ethernet0
   switchport mode trunk
   switchport trunk allowed vlan 100-101,200-201
-  spanning-tree port type edge trunk
+  spanning-tree port type edge
 
 interface Ethernet1/4
   description # ASA-WAN # Port # Ethernet0
   switchport mode trunk
   switchport trunk allowed vlan 101,201
+  spanning-tree port type edge
+
+interface Ethernet1/5
+  shutdown
+
+interface Ethernet1/6
+  shutdown
+
+interface Ethernet1/7
+  shutdown
+
+interface Ethernet1/8
+  shutdown
+
+interface Ethernet1/9
+  shutdown
+
+interface Ethernet1/10
+  shutdown
+
+interface Ethernet1/11
+  shutdown
+
+interface Ethernet1/12
+  shutdown
+
+interface Ethernet1/13
+  shutdown
+
+interface Ethernet1/14
+  shutdown
+
+interface Ethernet1/15
+  shutdown
+
+interface Ethernet1/16
+  shutdown
+
+interface Ethernet1/17
+  shutdown
+
+interface Ethernet1/18
+  shutdown
+
+interface Ethernet1/19
+  shutdown
+
+interface Ethernet1/20
+  shutdown
+
+interface Ethernet1/21
+  shutdown
+
+interface Ethernet1/22
+  shutdown
+
+interface Ethernet1/23
+  shutdown
+
+interface Ethernet1/24
+  shutdown
+
+interface Ethernet1/25
+  shutdown
+
+interface Ethernet1/26
+  shutdown
+
+interface Ethernet1/27
+  shutdown
+
+interface Ethernet1/28
+  shutdown
+
+interface Ethernet1/29
+  shutdown
+
+interface Ethernet1/30
+  shutdown
+
+interface Ethernet1/31
+  shutdown
+
+interface Ethernet1/32
+  shutdown
+
+interface Ethernet1/33
+  shutdown
+
+interface Ethernet1/34
+  shutdown
+
+interface Ethernet1/35
+  shutdown
+
+interface Ethernet1/36
+  shutdown
+
+interface Ethernet1/37
+  shutdown
+
+interface Ethernet1/38
+  shutdown
+
+interface Ethernet1/39
+  shutdown
+
+interface Ethernet1/40
+  shutdown
+
+interface Ethernet1/41
+  shutdown
+
+interface Ethernet1/42
+  shutdown
+
+interface Ethernet1/43
+  shutdown
+
+interface Ethernet1/44
+  shutdown
+
+interface Ethernet1/45
+  shutdown
+
+interface Ethernet1/46
+  shutdown
+
+interface Ethernet1/47
+  shutdown
+
+interface Ethernet1/48
+  shutdown
+
+interface Ethernet1/49
+  shutdown
+
+interface Ethernet1/50
+  shutdown
+
+interface Ethernet1/51
+  shutdown
+
+interface Ethernet1/52
+  shutdown
+
+interface Ethernet1/53
+  shutdown
+
+interface Ethernet1/54
+  shutdown
+
+interface Ethernet1/55
+  shutdown
+
+interface Ethernet1/56
+  shutdown
+
+interface Ethernet1/57
+  shutdown
+
+interface Ethernet1/58
+  shutdown
+
+interface Ethernet1/59
+  shutdown
+
+interface Ethernet1/60
+  shutdown
+
+interface Ethernet1/61
+  shutdown
+
+interface Ethernet1/62
+  shutdown
+
+interface Ethernet1/63
+  shutdown
+
+interface Ethernet1/64
+  shutdown
+
+interface mgmt0
+  vrf member management
 
 interface loopback0
   description Router_ID # Control Plane EVPN
@@ -188,6 +387,16 @@ interface loopback0
 interface loopback1
   description Router_ID # Data Plane VxLAN
   ip address 10.30.1.10/32
+
+interface loopback10
+  description # BL-21 VRF-PROM ID #
+  vrf member PROM
+  ip address 10.0.255.20/32 tag 9910
+
+interface loopback11
+  description # BL-21 VRF-TEST ID #
+  vrf member TEST
+  ip address 10.1.255.20/32 tag 9920
 icam monitor scale
 
 cli alias name wr copy run start
@@ -199,6 +408,7 @@ line vty
 boot nxos bootflash:/nxos.9.3.10.bin sup-1
 router bgp 65031
   router-id 10.30.0.10
+  bestpath as-path multipath-relax
   address-family ipv4 unicast
     redistribute direct route-map REDISTRIBUTE_CONNECTED
     maximum-paths ibgp 64
@@ -217,7 +427,6 @@ router bgp 65031
     address-family l2vpn evpn
       send-community
       send-community extended
-      rewrite-evpn-rt-asn
   neighbor 10.30.1.1
     inherit peer SPINE_OVERLAY
     description SPINE-11
@@ -233,14 +442,14 @@ router bgp 65031
   vrf PROM
     address-family ipv4 unicast
       advertise l2vpn evpn
-      redistribute direct route-map RM_PROM_CONNECTED
-      redistribute static route-map RM_PROM_STATIC
+      redistribute direct route-map TAG-PROM
+      redistribute static route-map TAG-PROM
       default-information originate
   vrf TEST
     address-family ipv4 unicast
       advertise l2vpn evpn
-      redistribute direct route-map RM_TEST_CONNECTED
-      redistribute static route-map RM_TEST_STATIC
+      redistribute direct route-map TAG-TEST
+      redistribute static route-map TAG-TEST
       default-information originate
 evpn
   vni 10100 l2
@@ -259,4 +468,9 @@ evpn
     rd 10.30.0.10:201
     route-target import 10201:201
     route-target export 10201:201
+
+l2rib dup-host-mac-detection 2 60
+!
+!end
+!end
 
