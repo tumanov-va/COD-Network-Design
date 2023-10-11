@@ -9,10 +9,6 @@ sh ip route
 #########   LEAF-11   #########
 
 LEAF-11# sh lldp neighbors
-sh ip interface brief | in up
-sh ip bgp summary
-sh ip route
-
 Capability codes:
   (R) Router, (B) Bridge, (T) Telephone, (C) DOCSIS Cable Device
   (W) WLAN Access Point, (P) Repeater, (S) Station, (O) Other
@@ -111,10 +107,6 @@ IP Route Table for VRF "default"
 #########   BL-11   #########
 
 BL-11# sh lldp neighbors
-sh ip interface brief | in up
-sh ip bgp summary
-sh ip route
-
 Capability codes:
   (R) Router, (B) Bridge, (T) Telephone, (C) DOCSIS Cable Device
   (W) WLAN Access Point, (P) Repeater, (S) Station, (O) Other
@@ -211,10 +203,6 @@ IP Route Table for VRF "default"
 #########   LEAF-21   #########
 
 LEAF-21# sh lldp neighbors
-sh ip interface brief | in up
-sh ip bgp summary
-sh ip route
-
 Capability codes:
   (R) Router, (B) Bridge, (T) Telephone, (C) DOCSIS Cable Device
   (W) WLAN Access Point, (P) Repeater, (S) Station, (O) Other
@@ -312,10 +300,6 @@ IP Route Table for VRF "default"
 #########   BL-21   #########
 
 BL-21# sh lldp neighbors
-sh ip interface brief | in up
-sh ip bgp summary
-sh ip route
-
 Capability codes:
   (R) Router, (B) Bridge, (T) Telephone, (C) DOCSIS Cable Device
   (W) WLAN Access Point, (P) Repeater, (S) Station, (O) Other
