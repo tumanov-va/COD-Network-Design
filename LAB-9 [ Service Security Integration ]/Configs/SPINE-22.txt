@@ -1,3 +1,4 @@
+
 hostname SPINE-22
 vdc SPINE-22 id 1
   limit-resource vlan minimum 16 maximum 4094
@@ -16,6 +17,7 @@ feature vn-segment-vlan-based
 feature lldp
 clock timezone MSK 3 0
 feature nv overlay
+feature ngoam
 
 no password strength-check
 username admin password 5 $5$OEKLKK$hypNPbZUKo6KxiNXIicBPYL/P3pFbXVwj7mBXgRwdk.  role network-admin
@@ -48,6 +50,9 @@ key chain UNDERLAY_KeyChain
     key-string 7 073f007f7d3e363733
     cryptographic-algorithm HMAC-SHA-256
 vrf context management
+ngoam profile 1
+  oam-channel 2
+ngoam install acl
 
 
 interface Vlan1
@@ -75,6 +80,192 @@ interface Ethernet1/3
   no ip redirects
   ip address 10.30.104.252/31
   no shutdown
+
+interface Ethernet1/4
+  shutdown
+
+interface Ethernet1/5
+  shutdown
+
+interface Ethernet1/6
+  shutdown
+
+interface Ethernet1/7
+  shutdown
+
+interface Ethernet1/8
+  shutdown
+
+interface Ethernet1/9
+  shutdown
+
+interface Ethernet1/10
+  shutdown
+
+interface Ethernet1/11
+  shutdown
+
+interface Ethernet1/12
+  shutdown
+
+interface Ethernet1/13
+  shutdown
+
+interface Ethernet1/14
+  shutdown
+
+interface Ethernet1/15
+  shutdown
+
+interface Ethernet1/16
+  shutdown
+
+interface Ethernet1/17
+  shutdown
+
+interface Ethernet1/18
+  shutdown
+
+interface Ethernet1/19
+  shutdown
+
+interface Ethernet1/20
+  shutdown
+
+interface Ethernet1/21
+  shutdown
+
+interface Ethernet1/22
+  shutdown
+
+interface Ethernet1/23
+  shutdown
+
+interface Ethernet1/24
+  shutdown
+
+interface Ethernet1/25
+  shutdown
+
+interface Ethernet1/26
+  shutdown
+
+interface Ethernet1/27
+  shutdown
+
+interface Ethernet1/28
+  shutdown
+
+interface Ethernet1/29
+  shutdown
+
+interface Ethernet1/30
+  shutdown
+
+interface Ethernet1/31
+  shutdown
+
+interface Ethernet1/32
+  shutdown
+
+interface Ethernet1/33
+  shutdown
+
+interface Ethernet1/34
+  shutdown
+
+interface Ethernet1/35
+  shutdown
+
+interface Ethernet1/36
+  shutdown
+
+interface Ethernet1/37
+  shutdown
+
+interface Ethernet1/38
+  shutdown
+
+interface Ethernet1/39
+  shutdown
+
+interface Ethernet1/40
+  shutdown
+
+interface Ethernet1/41
+  shutdown
+
+interface Ethernet1/42
+  shutdown
+
+interface Ethernet1/43
+  shutdown
+
+interface Ethernet1/44
+  shutdown
+
+interface Ethernet1/45
+  shutdown
+
+interface Ethernet1/46
+  shutdown
+
+interface Ethernet1/47
+  shutdown
+
+interface Ethernet1/48
+  shutdown
+
+interface Ethernet1/49
+  shutdown
+
+interface Ethernet1/50
+  shutdown
+
+interface Ethernet1/51
+  shutdown
+
+interface Ethernet1/52
+  shutdown
+
+interface Ethernet1/53
+  shutdown
+
+interface Ethernet1/54
+  shutdown
+
+interface Ethernet1/55
+  shutdown
+
+interface Ethernet1/56
+  shutdown
+
+interface Ethernet1/57
+  shutdown
+
+interface Ethernet1/58
+  shutdown
+
+interface Ethernet1/59
+  shutdown
+
+interface Ethernet1/60
+  shutdown
+
+interface Ethernet1/61
+  shutdown
+
+interface Ethernet1/62
+  shutdown
+
+interface Ethernet1/63
+  shutdown
+
+interface Ethernet1/64
+  shutdown
+
+interface mgmt0
+  vrf member management
 
 interface loopback0
   description Router_ID # Control Plane EVPN
@@ -141,3 +332,10 @@ router bgp 65032
   neighbor 10.30.104.0/24
     inherit peer POD2_LEAF
     description POD2 LEAFS
+
+
+!
+
+
+!end
+!end
