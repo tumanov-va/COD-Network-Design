@@ -1,7 +1,4 @@
 BL-11# sh lldp neighbors
-
-sh ip interface brief | in up
-
 Capability codes:
   (R) Router, (B) Bridge, (T) Telephone, (C) DOCSIS Cable Device
   (W) WLAN Access Point, (P) Repeater, (S) Station, (O) Other
@@ -10,17 +7,15 @@ SPINE-11             Eth1/1          120        BR          Ethernet1/2
 SPINE-12             Eth1/2          120        BR          Ethernet1/2   
 Total entries displayed: 2
 sh vrf PROM detail
-BL-11# 
+
+
 BL-11# sh ip interface brief | in up
-sh vrf TEST detail
-
-sh nve interface
-
 Lo0                  10.30.0.10      protocol-up/link-up/admin-up       
 Lo1                  10.30.1.10      protocol-up/link-up/admin-up       
 Eth1/1               10.30.4.3       protocol-up/link-up/admin-up       
 Eth1/2               10.30.4.7       protocol-up/link-up/admin-up       
-BL-11# 
+
+
 BL-11# sh vrf PROM detail
 VRF-Name: PROM, VRF-ID: 3, State: Up
     VPNID: unknown
@@ -30,9 +25,7 @@ VRF-Name: PROM, VRF-ID: 3, State: Up
     Table-ID: 0x80000003, AF: IPv6, Fwd-ID: 0x80000003, State: Up
     Table-ID: 0x00000003, AF: IPv4, Fwd-ID: 0x00000003, State: Up
 
-sh interface nve 1
 
-BL-11# 
 BL-11# sh vrf TEST detail
 
 VRF-Name: TEST, VRF-ID: 4, State: Up
@@ -43,10 +36,8 @@ VRF-Name: TEST, VRF-ID: 4, State: Up
     Table-ID: 0x80000004, AF: IPv6, Fwd-ID: 0x80000004, State: Up
     Table-ID: 0x00000004, AF: IPv4, Fwd-ID: 0x00000004, State: Up
 
-BL-11# 
-BL-11# sh nve interface
 
-sh nve vrf
+BL-11# sh nve interface
 Interface: nve1, State: Up, encapsulation: VXLAN
 
  VPC Capability: VPC-VIP-Only [not-notified]
@@ -54,15 +45,8 @@ Interface: nve1, State: Up, encapsulation: VXLAN
  Host Learning Mode: Control-Plane
  Source-Interface: loopback1 (primary: 10.30.1.10, secondary: 0.0.0.0)
 
-sh nve vrf PROM
-BL-11# 
+
 BL-11# sh interface nve 1
-sh nve vrf TEST
-
-sh bgp l2vpn evpn summary
-
-sh bgp l2vpn evpn
-
 nve1 is up
 admin state is up,  Hardware: NVE
   MTU 9216 bytes
@@ -73,7 +57,7 @@ admin state is up,  Hardware: NVE
   TX
     ucast: 44217 pkts, 5572502 bytes - mcast: 0 pkts, 0 bytes
 
-BL-11# 
+
 BL-11# sh nve peers detail
 Details of nve Peers:
 ----------------------------------------
@@ -114,7 +98,7 @@ Peer-Ip: 10.30.101.11
     vni assignment mode : SYMMETRIC
     Peer Location       : N/A
 
-BL-11# 
+
 BL-11# sh nve vni
 Codes: CP - Control Plane        DP - Data Plane          
        UC - Unconfigured         SA - Suppress ARP        
@@ -131,26 +115,26 @@ nve1      10101    UnicastBGP        Up    CP   L2 [101]           SA
 nve1      10200    UnicastBGP        Up    CP   L2 [200]           SA   
 nve1      10201    UnicastBGP        Up    CP   L2 [201]           SA   
 
-BL-11# 
+
 BL-11# sh nve vrf
 VRF-Name     VNI        Interface Gateway-MAC      
 ------------ ---------- --------- -----------------
 PROM         9910       nve1      5009.0000.1b08   
 TEST         9920       nve1      5009.0000.1b08   
 
-BL-11# 
+
 BL-11# sh nve vrf PROM
 VRF-Name     VNI        Interface Gateway-MAC      
 ------------ ---------- --------- -----------------
 PROM         9910       nve1      5009.0000.1b08   
 
-BL-11# 
+
 BL-11# sh nve vrf TEST
 VRF-Name     VNI        Interface Gateway-MAC      
 ------------ ---------- --------- -----------------
 TEST         9920       nve1      5009.0000.1b08   
 
-BL-11# 
+
 BL-11# sh bgp l2vpn evpn summary
 BGP summary information for VRF default, address family L2VPN EVPN
 BGP router identifier 10.30.0.10, local AS number 65031
@@ -162,7 +146,8 @@ BGP community entries [0/0], BGP clusterlist entries [2/8]
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 10.30.1.1       4 65031    5558    5371     1455    0    0 04:33:29 24        
 10.30.1.2       4 65031    5537    5375     1455    0    0 04:33:48 24        
-BL-11# 
+
+
 BL-11# sh bgp l2vpn evpn
 BGP routing table information for VRF default, address family L2VPN EVPN
 BGP table version is 1455, Local Router ID is 10.30.0.10
