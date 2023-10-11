@@ -1,0 +1,36 @@
+Client1-PROM#
+!
+interface Ethernet0/0
+ description # LEAF-11 # PORT # Ethernet1/3 #
+ mac-address 1000.1000.1010
+ ip address 10.0.10.10 255.255.255.0
+!
+ip route 0.0.0.0 0.0.0.0 10.0.10.254
+
+Client1-TEST#
+!
+interface Ethernet0/0
+ description # LEAF-11 # PORT # Ethernet1/4 #
+ mac-address 1000.1000.3010
+ ip address 10.1.30.10 255.255.255.0
+!
+ip route 0.0.0.0 0.0.0.0 10.1.30.254
+
+Client2-PROM#
+!
+interface Ethernet0/0
+ description # LEAF-21 # PORT # Ethernet1/3 #
+ mac-address 1000.1000.2010
+ ip address 10.0.20.10 255.255.255.0
+!
+ip route 0.0.0.0 0.0.0.0 10.0.20.254
+
+Client2-TEST#
+!
+interface Ethernet0/0
+ description # LEAF-21 # PORT # Ethernet1/4 #
+ no switchport
+ mac-address 1000.1000.4010
+ ip address 10.1.40.10 255.255.255.0
+!
+ip route 0.0.0.0 0.0.0.0 10.1.40.254
