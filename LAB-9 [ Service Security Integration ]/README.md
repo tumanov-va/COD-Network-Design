@@ -18,10 +18,12 @@
            Иные взаимодействия запрещены.
 
 Матрица доступов
+
 ![VRF Clients Interop](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/9a539d40-c211-4523-8f58-bca2d2e1a83b)   
 
         
 Физическая схема
+
 ![Схема внедрения](https://github.com/tumanov-va/COD-Network-Design/assets/134439784/3fadd47d-9eed-49d8-8706-412302434418)
 
 Исходные данные:
